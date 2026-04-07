@@ -3,284 +3,166 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>HatCric Predictor | Live IPL 2024 Analytics</title>
+    <title>HatCric Predictor | Live IPL 2026 Analytics</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800;900&family=Inter:wght@400;500;600&family=Space_Grotesk:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800;900&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
         tailwind.config = {
           darkMode: "class",
           theme: {
             extend: {
-              colors: {
-                  "inverse-surface": "#fcf9f8",
-                  "surface-bright": "#2c2c2c",
-                  "secondary-fixed": "#00fbfb",
-                  "outline": "#767575",
-                  "tertiary-fixed-dim": "#ff7989",
-                  "on-surface-variant": "#adaaaa",
-                  "secondary-dim": "#00ecec",
-                  "secondary-fixed-dim": "#00ecec",
-                  "inverse-on-surface": "#565555",
-                  "outline-variant": "#484847",
-                  "tertiary-dim": "#e7004c",
-                  "surface-dim": "#0e0e0e",
-                  "tertiary": "#ff6e81",
-                  "surface-container-highest": "#262626",
-                  "primary-container": "#2ff801",
-                  "primary-fixed": "#2ff801",
-                  "error": "#ff7351",
-                  "on-tertiary-fixed": "#39000c",
-                  "secondary-container": "#006a6a",
-                  "primary-fixed-dim": "#2be800",
-                  "on-tertiary-container": "#000000",
-                  "inverse-primary": "#106f00",
-                  "surface-container": "#1a1a1a",
-                  "on-background": "#ffffff",
-                  "on-primary-fixed": "#064200",
-                  "on-tertiary": "#490012",
-                  "on-primary-fixed-variant": "#0d6200",
-                  "surface": "#0e0e0e",
-                  "on-error": "#450900",
-                  "surface-variant": "#262626",
-                  "on-primary-container": "#0b5800",
-                  "surface-container-high": "#20201f",
-                  "error-dim": "#d53d18",
-                  "on-secondary-fixed": "#004747",
-                  "tertiary-container": "#ff0355",
-                  "tertiary-fixed": "#ff909b",
-                  "background": "#0e0e0e",
-                  "secondary": "#00fbfb",
-                  "on-error-container": "#ffd2c8",
-                  "surface-container-lowest": "#000000",
-                  "error-container": "#b92902",
-                  "on-secondary-container": "#d9fffe",
-                  "on-surface": "#ffffff",
-                  "on-tertiary-fixed-variant": "#780023",
-                  "on-secondary-fixed-variant": "#006666",
-                  "primary": "#8eff71",
-                  "primary-dim": "#2be800",
-                  "surface-tint": "#8eff71",
-                  "surface-container-low": "#131313",
-                  "on-secondary": "#005c5c",
-                  "on-primary": "#0d6100"
-              },
-              borderRadius: {
-                  DEFAULT: "0.125rem",
-                  lg: "0.25rem",
-                  xl: "0.5rem",
-                  full: "0.75rem"
-              },
-              fontFamily: {
-                  headline: ["Lexend"],
-                  body: ["Inter"],
-                  label: ["Space Grotesk"]
-              }
+              colors: { "surface-dim": "#0e0e0e", "tertiary": "#ff6e81", "primary": "#8eff71", "secondary": "#00fbfb", "surface": "#0e0e0e" }
             }
           }
         }
     </script>
     <style>
-        body {
-            background-color: #0e0e0e;
-            color: #ffffff;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            min-height: max(884px, 100dvh);
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .velocity-gradient {
-            background: linear-gradient(135deg, #8eff71 0%, #2ff801 100%);
-        }
-        .glow-primary {
-            box-shadow: 0 0 25px rgba(43, 232, 0, 0.25);
-        }
-        .glass-panel {
-            background: rgba(38, 38, 38, 0.4);
-            backdrop-filter: blur(20px);
-        }
-        .pulse-red {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .4; }
-        }
+        body { background-color: #0e0e0e; color: #ffffff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .velocity-gradient { background: linear-gradient(135deg, #8eff71 0%, #2ff801 100%); }
+        .glow-primary { box-shadow: 0 0 25px rgba(43, 232, 0, 0.25); }
     </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex flex-col">
 
-    <header class="bg-[#0e0e0e] flex justify-between items-center px-6 py-4 w-full shadow-[0_0_15px_rgba(57,255,20,0.1)] z-50">
+    <header class="bg-[#0e0e0e] flex justify-between items-center px-6 py-4 w-full border-b border-white/5">
         <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-[#39FF14] text-3xl">sports_cricket</span>
-            <h1 class="text-2xl font-black text-[#39FF14] tracking-tighter font-['Lexend'] uppercase">HatCric</h1>
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="relative flex h-2 w-2">
-                <span class="pulse-red absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
-            </span>
-            <span class="text-[#39FF14] font-['Lexend'] tracking-tighter uppercase text-sm font-bold">LIVE DATA STREAM</span>
+            <h1 class="text-2xl font-black text-[#39FF14] tracking-tighter uppercase">HatCric</h1>
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col items-center justify-center p-6 gap-8 max-w-7xl mx-auto w-full">
-        
-        <section class="w-full flex flex-col md:flex-row gap-4 items-end justify-between bg-surface-container-low p-8 rounded-lg">
+    <main class="flex-grow flex flex-col items-center p-6 gap-8 max-w-7xl mx-auto w-full">
+        <section class="w-full flex flex-col md:flex-row gap-4 items-end justify-between bg-white/5 p-8 rounded-lg">
             <div class="w-full md:w-2/3">
-                <label class="block font-label text-secondary uppercase text-xs tracking-widest mb-2 font-bold">Select Live T20 Match</label>
-                <div class="relative group">
-                    <select id="match-selector" class="w-full bg-surface-container-highest border-none text-on-surface font-body py-4 px-6 rounded-lg appearance-none cursor-pointer focus:ring-2 focus:ring-primary-container transition-all">
-                        <option value="mock_test">Developer Mode: Mock Game Data</option>
-                        <option value="149732">Target Match (ID: 149732)</option>
-                        <option value="151492">Live Match (Testing 151492)</option>
-                        <option value="40382">RCB vs KKR - Chinnaswamy Stadium</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                        <span class="material-symbols-outlined text-outline">expand_more</span>
-                    </div>
-                </div>
+                <label class="block text-secondary uppercase text-xs font-bold mb-2">Select Live T20 Match</label>
+                <select id="match-selector" class="w-full bg-black border border-white/10 text-white py-4 px-6 rounded-lg outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                    <option value="mock_test">Developer Mode: Mock Game Data</option>
+                    <option value="149743">RR vs MI (Match 13 - LIVE TONIGHT)</option>
+                    <option value="149721">RCB vs CSK (Match 11 - Replay)</option>
+                </select>
             </div>
-            <button id="predict-btn" class="velocity-gradient text-on-primary font-headline font-extrabold uppercase py-4 px-10 rounded-lg shadow-lg hover:scale-95 transition-transform duration-200 w-full md:w-1/3 text-lg tracking-tight flex items-center justify-center gap-2">
-                <span>PREDICT SCORE</span>
+            <button id="predict-btn" class="velocity-gradient text-black font-black py-4 px-10 rounded-lg w-full md:w-1/3">
+                PREDICT SCORE
             </button>
         </section>
 
         <section class="w-full grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
-            
-            <div class="bg-surface-container-low p-6 rounded-lg flex flex-col justify-between group hover:bg-surface-container transition-colors relative overflow-hidden h-48">
-                <div class="flex items-start justify-between">
-                    <span class="font-label text-secondary-fixed-dim text-xs uppercase tracking-widest font-medium">Current Score</span>
-                    <span class="material-symbols-outlined text-secondary-fixed-dim opacity-30">scoreboard</span>
+            <div class="bg-white/5 p-6 rounded-lg flex flex-col justify-between h-48">
+                <span class="text-xs uppercase text-gray-500 font-bold">Current Score</span>
+                <div class="text-5xl font-black" id="current-score">0/0</div>
+            </div>
+            <div class="bg-white/5 p-6 rounded-lg flex flex-col justify-between h-48">
+                <span class="text-xs uppercase text-gray-500 font-bold">Overs Bowled</span>
+                <div class="text-5xl font-bold" id="current-overs">0.0</div>
+            </div>
+            <div class="bg-white/5 p-6 rounded-lg flex flex-col justify-between h-48">
+                <span class="text-xs uppercase text-gray-500 font-bold">Current RR</span>
+                <div class="text-5xl font-bold" id="current-crr">0.00</div>
+            </div>
+            <div class="bg-white/10 p-6 rounded-lg flex flex-col justify-between border border-primary/20 glow-primary h-48">
+                <span class="text-xs uppercase text-primary font-bold" id="hero-label">Predicted Score</span>
+                <div class="text-5xl font-black text-primary" id="project-score">...</div>
+                <div class="text-[10px] text-primary/60 uppercase font-bold" id="hero-subtext">System Ready</div>
+            </div>
+        </section>
+
+        <section class="w-full bg-white/5 p-8 rounded-lg">
+            <div class="flex justify-between items-end mb-4">
+                <div class="flex flex-col">
+                    <span id="team-a-name" class="text-xs font-bold text-primary uppercase">TEAM A</span>
+                    <span class="text-4xl font-black" id="team-a-prob">50%</span>
                 </div>
-                <div class="font-headline text-5xl font-black text-on-surface tracking-tighter" id="current-score">
-                    145<span class="text-tertiary">/4</span>
-                </div>
-                <div class="absolute -bottom-2 -right-2 opacity-5 scale-150">
-                    <span class="material-symbols-outlined text-9xl">sports_cricket</span>
+                <div class="flex flex-col items-end">
+                    <span id="team-b-name" class="text-xs font-bold text-secondary uppercase">TEAM B</span>
+                    <span class="text-4xl font-black" id="team-b-prob">50%</span>
                 </div>
             </div>
-
-            <div class="bg-surface-container-low p-6 rounded-lg flex flex-col justify-between group hover:bg-surface-container transition-colors h-48">
-                <div class="flex items-start justify-between">
-                    <span class="font-label text-outline text-xs uppercase tracking-widest font-medium">Overs Bowled</span>
-                    <span class="material-symbols-outlined text-outline opacity-30">timer</span>
-                </div>
-                <div class="font-label text-5xl font-bold text-on-surface" id="current-overs">
-                    16.2
-                </div>
-                <div class="text-[10px] text-outline font-label uppercase">Ball 2 of Over 17</div>
-            </div>
-
-            <div class="bg-surface-container-low p-6 rounded-lg flex flex-col justify-between group hover:bg-surface-container transition-colors h-48 border-l-2 border-secondary/20">
-                <div class="flex items-start justify-between">
-                    <span class="font-label text-secondary text-xs uppercase tracking-widest font-medium">Current RR</span>
-                    <span class="material-symbols-outlined text-secondary opacity-30">trending_up</span>
-                </div>
-                <div class="font-label text-5xl font-bold text-on-surface" id="current-crr">
-                    8.89
-                </div>
-                <div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
-                    <div class="bg-secondary h-full w-3/4"></div>
-                </div>
-            </div>
-
-            <div class="md:col-span-1 bg-surface-container-highest p-6 rounded-lg flex flex-col justify-between border border-primary/20 glow-primary relative overflow-hidden h-48 transform -rotate-1">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -mr-16 -mt-16 rounded-full"></div>
-                <div class="flex items-start justify-between relative z-10">
-                    <span class="font-label text-primary text-xs uppercase tracking-widest font-bold">Projected Score</span>
-                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">insights</span>
-                </div>
-                <div class="font-headline text-6xl font-black text-primary tracking-tighter relative z-10" id="project-score">
-                    178
-                </div>
-                <div class="text-[10px] text-primary/60 font-label uppercase tracking-tighter relative z-10">Confidence Index: 94%</div>
+            <div class="h-4 w-full bg-white/5 rounded-full overflow-hidden flex">
+                <div id="bar-a" class="h-full bg-primary transition-all duration-1000" style="width: 50%"></div>
+                <div id="bar-b" class="h-full bg-secondary transition-all duration-1000" style="width: 50%"></div>
             </div>
         </section>
     </main>
 
-    <footer class="fixed bottom-0 w-full pb-4 flex justify-center items-center px-8 bg-transparent">
-        <p class="font-['Inter'] text-[10px] text-center uppercase tracking-widest text-gray-600 max-w-2xl leading-relaxed">
-            © 2024 HatCric Predictor. Data provided for entertainment purposes only. Predictive accuracy is subject to match volatility.
-        </p>
-    </footer>
+<script>
+    const matchSelector = document.getElementById('match-selector');
+    const predictBtn = document.getElementById('predict-btn');
 
-    <script>
-        const matchSelector = document.getElementById('match-selector');
-        const predictBtn = document.getElementById('predict-btn');
-        let currentMatchId = matchSelector.value; 
-        let pollingInterval;
-
-        function setLoadingState() {
-            document.getElementById('current-score').innerHTML = `...`;
-            document.getElementById('current-overs').innerText = `...`;
-            document.getElementById('current-crr').innerText = `...`;
-            document.getElementById('project-score').innerText = `...`;
-            predictBtn.innerHTML = `<span class="material-symbols-outlined animate-spin">refresh</span> FETCHING...`;
-            predictBtn.classList.add('opacity-80', 'cursor-wait');
-        }
-
-        function restoreButtonState() {
-            predictBtn.innerHTML = `<span>PREDICT SCORE</span>`;
-            predictBtn.classList.remove('opacity-80', 'cursor-wait');
-        }
-
-        async function fetchMatchData() {
-            const API_URL = `http://127.0.0.1:5000/api/match/${currentMatchId}`;
+    async function fetchMatchData() {
+        predictBtn.innerText = "FETCHING...";
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/match/${matchSelector.value}`);
             
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-
-                const runs = data.current_score || 0;
-                const overs = data.overs_bowled || 0;
-                const wickets = data.wickets || 0;
-                
-                const completedOvers = Math.floor(overs);
-                const balls = Math.round((overs - completedOvers) * 10); 
-                const trueOvers = completedOvers + (balls / 6);
-
-                let crr = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
-                let projected = trueOvers > 0 ? Math.floor(crr * 20) : 0;
-                projected = Math.max(0, Math.floor(projected - (wickets * 2.5)));
-
-                document.getElementById('current-score').innerHTML = `${runs}<span class="text-tertiary">/${wickets}</span>`;
-                document.getElementById('current-overs').innerText = overs;
-                document.getElementById('current-crr').innerText = crr;
-                
-                const projectCard = document.getElementById('project-score');
-                projectCard.innerText = projected;
-                projectCard.parentElement.classList.add('scale-105');
-                setTimeout(() => projectCard.parentElement.classList.remove('scale-105'), 200);
-
-                console.log(`[Live Data] Match ${currentMatchId} updated successfully.`);
-
-            } catch (error) {
-                console.error("Error fetching match data:", error);
-                document.getElementById('project-score').innerText = "ERR";
-            } finally {
-                restoreButtonState();
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
             }
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            const runs = data.current_score || 0;
+            const overs = data.overs_bowled || 0;
+            const innings = data.innings || 1;
+            const target = data.target || 0;
+            
+            const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
+            let crr = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
+
+            document.getElementById('current-score').innerHTML = `${runs}<span class="text-tertiary">/${data.wickets}</span>`;
+            document.getElementById('current-overs').innerText = overs;
+            document.getElementById('current-crr').innerText = crr;
+
+            const heroVal = document.getElementById('project-score');
+            const heroLabel = document.getElementById('hero-label');
+            const heroSub = document.getElementById('hero-subtext');
+
+            if (data.is_complete) {
+                heroLabel.innerText = "MATCH FINISHED";
+                heroVal.innerText = "END";
+                heroSub.innerText = data.status; 
+            } else if (data.state === "Preview") {
+                heroLabel.innerText = "UPCOMING MATCH";
+                heroVal.innerText = "PRE";
+                heroSub.innerText = data.status;
+            } else if (innings === 2) {
+                heroLabel.innerText = "TARGET CHASE";
+                heroVal.innerText = target;
+                heroSub.innerText = `${Math.max(0, target - runs)} Runs Needed`;
+            } else {
+                heroLabel.innerText = "PROJECTED SCORE";
+                heroVal.innerText = Math.floor(crr * 20);
+                heroSub.innerText = "First Innings Live";
+            }
+
+            const isLive = !data.is_complete && data.state !== "Preview";
+            document.getElementById('team-a-name').innerText = data.team_a + (isLive && innings === 1 ? " (BATTING)" : "");
+            document.getElementById('team-b-name').innerText = data.team_b + (isLive && innings === 2 ? " (BATTING)" : "");
+
+            const pA = data.win_probability.team_a;
+            const pB = data.win_probability.team_b;
+            document.getElementById('team-a-prob').innerText = pA + "%";
+            document.getElementById('team-b-prob').innerText = pB + "%";
+            document.getElementById('bar-a').style.width = pA + "%";
+            document.getElementById('bar-b').style.width = pB + "%";
+
+            heroVal.parentElement.classList.add('scale-105');
+            setTimeout(() => heroVal.parentElement.classList.remove('scale-105'), 200);
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+            document.getElementById('project-score').innerText = "ERR";
+        } finally {
+            predictBtn.innerText = "MANUAL REFRESH";
         }
+    }
 
-        function startDataStream() {
-            setLoadingState();
-            fetchMatchData();
-            if (pollingInterval) clearInterval(pollingInterval);
-            pollingInterval = setInterval(fetchMatchData, 15000);
-        }
+    predictBtn.addEventListener('click', fetchMatchData);
+    matchSelector.addEventListener('change', fetchMatchData);
+    
+    // Fetch ONCE when the page loads
+    fetchMatchData();
 
-        matchSelector.addEventListener('change', (event) => {
-            currentMatchId = event.target.value;
-            startDataStream();
-        });
-
-        predictBtn.addEventListener('click', () => {
-            startDataStream();
-        });
-
-        startDataStream();
+    // AUTO-POLLING HAS BEEN REMOVED TO PROTECT YOUR 200/MONTH QUOTA
     </script>
 </body>
 </html>

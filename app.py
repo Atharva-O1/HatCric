@@ -1,11 +1,6 @@
 """
 HatCric Backend Proxy
 =====================
-A lightweight Flask proxy server that:
-  - Hides your Live Score API key from client-side code
-  - Caches responses for 15 seconds to protect your API quota
-  - Sanitizes the external API response to only return fields HatCric needs
-  - Allows CORS from your local frontend dev servers
 """
 
 import time
@@ -16,12 +11,10 @@ import requests
 from dotenv import load_dotenv
 import os
 
-# ── Bootstrap ──────────────────────────────────────────────────────────────────
-load_dotenv()   # Reads LIVE_SCORE_API_KEY from .env
+load_dotenv()
 
 app = Flask(__name__)
 
-# Configure Python's built-in logger
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  [%(levelname)s]  %(message)s",
@@ -29,142 +22,135 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ── CORS ───────────────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
+    "http://localhost:5500", "http://127.0.0.1:5500",
+    "http://localhost:3000", "http://127.0.0.1:3000",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+    "http://localhost:8080", "http://127.0.0.1:8080",
 ]
 
 CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
 
-# ── Environment / Config ───────────────────────────────────────────────────────
 API_KEY = os.getenv("LIVE_SCORE_API_KEY")
 if not API_KEY:
     raise EnvironmentError("LIVE_SCORE_API_KEY is not set in your .env file.")
 
 CACHE_TTL_SECONDS = 15
 REQUEST_TIMEOUT = 8
-
-# ── In-Memory Cache ────────────────────────────────────────────────────────────
 _cache: dict[str, dict] = {}
 
 def get_cached(match_id: str):
     entry = _cache.get(match_id)
-    if entry is None:
-        return None
+    if entry is None: return None
     age = time.time() - entry["cached_at"]
     if age < CACHE_TTL_SECONDS:
-        logger.info("Cache HIT  for match_id=%s (age=%.1fs)", match_id, age)
         return entry["data"]
     return None
 
 def set_cached(match_id: str, data: dict):
     _cache[match_id] = {"data": data, "cached_at": time.time()}
 
-# ── Score Parsing Helper ───────────────────────────────────────────────────────
-def parse_score_response(raw: dict) -> dict:
-    """
-    Extracts runs, wickets, and overs specifically from the Cricbuzz RapidAPI 'hscard' endpoint.
-    """
+def parse_score_response(data):
     try:
-        miniscore = raw.get("miniscore")
+        is_complete = data.get("ismatchcomplete", False)
+        status = data.get("status", "Match Live")
         
-        if not miniscore:
-            return {"current_score": 0, "wickets": 0, "overs_bowled": 0.0}
-
-        bat_team = miniscore.get("batTeam", {})
+        # CRITICAL FIX: Cricbuzz uses 'matchInfo' for live matches, not 'matchHeader'
+        match_info = data.get("matchInfo", data.get("matchHeader", {}))
+        state = match_info.get("state", data.get("state", "Preview"))
         
-        current_score = int(bat_team.get("teamScore", 0))
-        wickets = int(bat_team.get("teamWkts", 0))
-        overs_bowled = float(miniscore.get("overs", 0.0))
+        team1 = match_info.get("team1", {}).get("shortName", "RR")
+        team2 = match_info.get("team2", {}).get("shortName", "MI")
 
-        return {
-            "current_score": current_score,
-            "wickets": wickets,
-            "overs_bowled": overs_bowled,
+        res = {
+            "innings": 1, "target": 0, "current_score": 0, "wickets": 0, "overs_bowled": 0.0,
+            "team_a": team1, "team_b": team2, "status": status,
+            "is_complete": is_complete, "state": state,
+            "win_probability": {"team_a": 43, "team_b": 57}
         }
 
-    except Exception as exc:
-        logger.warning("Could not parse Cricbuzz score payload — %s", exc)
-        return {"current_score": 0, "wickets": 0, "overs_bowled": 0.0}
+        # 1. LIVE DATA (Miniscore block)
+        if "miniscore" in data:
+            mini = data["miniscore"]
+            bat = mini.get("batTeam", {})
+            res.update({
+                "state": "Live", # Force state out of preview
+                "innings": mini.get("inningsId", 1),
+                "target": mini.get("target", 0),
+                "current_score": bat.get("teamScore", 0),
+                "wickets": bat.get("teamWkts", 0),
+                "overs_bowled": bat.get("overs", 0.0),
+            })
+            
+        # 2. LIVE/COMPLETED DATA FALLBACK (Scorecard block)
+        # Cricbuzz continually updates the scorecard. If miniscore is missing, pull from here.
+        if "scorecard" in data and len(data["scorecard"]) > 0:
+            sc = data["scorecard"]
+            last_innings = sc[-1]
+            
+            # If current_score is 0, miniscore missed it. Grab it from scorecard.
+            if res["current_score"] == 0:
+                res.update({
+                    "state": "Live" if not is_complete else "Complete",
+                    "innings": last_innings.get("inningsid", 1),
+                    "current_score": last_innings.get("score", 0),
+                    "wickets": last_innings.get("wickets", 0),
+                    "overs_bowled": last_innings.get("overs", 0.0)
+                })
+            
+            # Always safely calculate the target from the 1st innings
+            if len(sc) >= 2:
+                res["target"] = sc[0].get("score", 0) + 1
 
-# ── Proxy Endpoint ─────────────────────────────────────────────────────────────
+        # 3. OVERRIDE 'PREVIEW' IF TOSS HAPPENED OR MATCH IS LIVE
+        if "Preview" in res["state"] and ("toss" in status.lower() or "Match Live" in status):
+            res["state"] = "Live"
+
+        # 4. WIN PROBABILITY MATH
+        if is_complete:
+            if res["team_a"].lower() in status.lower() or "won" in status.lower():
+                if any(word in status.lower() for word in res["team_a"].lower().split()):
+                    res["win_probability"] = {"team_a": 100, "team_b": 0}
+                else:
+                    res["win_probability"] = {"team_a": 0, "team_b": 100}
+        elif res["innings"] == 2 and res["target"] > 0:
+            runs_needed = res["target"] - res["current_score"]
+            prob_b = max(5, min(95, 100 - (runs_needed / 2)))
+            res["win_probability"] = {"team_a": 100 - prob_b, "team_b": prob_b}
+
+        return res
+
+    except Exception as e:
+        logger.error(f"Parser Error: {e}")
+        return {"innings": 1, "target": 0, "current_score": 0, "wickets": 0, "overs_bowled": 0, "is_complete": False, "state": "Error"}
+
 @app.route("/api/match/<string:match_id>", methods=["GET"])
 def get_match_data(match_id: str):
-    
-    # ── 0. MOCK BYPASS (For testing when no games are live) ──
     if match_id == "mock_test":
-        logger.info("Serving Mock Data for UI testing!")
         return jsonify({
-            "match_id": "mock_test",
-            "current_score": 156,
-            "wickets": 4,
-            "overs_bowled": 16.2,
-            "last_5_overs": ["10", "W", "4", "12", "8"], # <-- ADD THIS LINE
-            "from_cache": False
+            "match_id": "mock_test", "innings": 2, "target": 185, "current_score": 120,
+            "wickets": 3, "overs_bowled": 14.2, "team_a": "RR", "team_b": "MI",
+            "is_complete": False, "state": "Live", "status": "Live Match",
+            "win_probability": {"team_a": 58, "team_b": 42}
         })
 
-    # Basic input validation
-    if not match_id.replace("-", "").replace("_", "").isalnum():
-        abort(400, description="Invalid match_id format.")
-
-    # 1. Cache check
     cached_data = get_cached(match_id)
     if cached_data is not None:
         return jsonify({**cached_data, "match_id": match_id, "from_cache": True})
 
-    # 2. External API request (Cricbuzz RapidAPI Format)
     url = f"https://cricbuzz-cricket.p.rapidapi.com/mcenter/v1/{match_id}/hscard"
-    headers = {
-        "x-rapidapi-host": "cricbuzz-cricket.p.rapidapi.com",
-        "x-rapidapi-key": API_KEY
-    }
-
-    logger.info("Cache MISS — calling external API for match_id=%s", match_id)
+    headers = {"x-rapidapi-host": "cricbuzz-cricket.p.rapidapi.com", "x-rapidapi-key": API_KEY}
 
     try:
         response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-
-    except requests.exceptions.Timeout:
-        return jsonify({"error": "External API timed out. Please retry."}), 504
-    except requests.exceptions.ConnectionError:
-        return jsonify({"error": "Could not reach the live score service."}), 502
-    except requests.exceptions.HTTPError as exc:
-        status = exc.response.status_code
-        if status == 404:
-            abort(404, description=f"Match '{match_id}' not found.")
-        return jsonify({"error": f"External API error ({status})."}), 502
-
-    # 3. Parse & sanitise
-    raw_json = response.json()
-    
-    logger.info("=== RAW RAPIDAPI RESPONSE ===")
-    logger.info(raw_json)
-    logger.info("=============================")
-    
-    sanitised = parse_score_response(raw_json)
-
-    # 4. Cache & respond
-    set_cached(match_id, sanitised)
-    logger.info(
-        "Served fresh data for match_id=%s  score=%s/%s  overs=%s",
-        match_id, sanitised["current_score"], sanitised["wickets"], sanitised["overs_bowled"]
-    )
-
-    return jsonify({**sanitised, "match_id": match_id, "from_cache": False})
-
-# ── Health-check Endpoint ──────────────────────────────────────────────────────
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "api_key_set": bool(API_KEY)})
+        if response.status_code != 200: return jsonify({"error": "API Error"}), response.status_code
+        
+        raw_json = response.json()
+        sanitised = parse_score_response(raw_json)
+        set_cached(match_id, sanitised)
+        return jsonify({**sanitised, "match_id": match_id, "from_cache": False})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    logger.info("Starting HatCric proxy on http://localhost:5000")
     app.run(host="0.0.0.0", port=5000, debug=True)
