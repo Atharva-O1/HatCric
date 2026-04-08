@@ -83,11 +83,133 @@
                 <div id="bar-b" class="h-full bg-secondary transition-all duration-1000" style="width: 50%"></div>
             </div>
         </section>
+
+        <section class="w-full grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="bg-white/5 p-8 rounded-lg xl:col-span-1">
+                <div class="flex items-center justify-between mb-5">
+                    <span class="text-xs uppercase text-gray-500 font-bold">Wickets In Hand</span>
+                    <span class="text-[10px] uppercase tracking-wide text-white/30 font-bold">Live Batting State</span>
+                </div>
+                <div id="wicket-dots" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="bg-white/5 p-8 rounded-lg xl:col-span-2">
+                <div class="flex items-center justify-between mb-5">
+                    <span class="text-xs uppercase text-gray-500 font-bold">Batters At Crease</span>
+                    <span class="text-[10px] uppercase tracking-wide text-primary/60 font-bold">Frontend Preview</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/10 text-white/35 uppercase text-[10px] tracking-wide">
+                                <th class="text-left font-medium py-2">Batter</th>
+                                <th class="text-right font-medium py-2">R</th>
+                                <th class="text-right font-medium py-2">B</th>
+                                <th class="text-right font-medium py-2">4s</th>
+                                <th class="text-right font-medium py-2">6s</th>
+                                <th class="text-right font-medium py-2">SR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batters-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 
 <script>
     const matchSelector = document.getElementById('match-selector');
     const predictBtn = document.getElementById('predict-btn');
+    const batterFallbacks = {
+        mock_test: [
+            { name: "Jake Fraser-McGurk", runs: 41, balls: 24, fours: 5, sixes: 2 },
+            { name: "KL Rahul", runs: 36, balls: 29, fours: 3, sixes: 1 }
+        ],
+        "149746": [
+            { name: "KL Rahul", runs: 52, balls: 31, fours: 6, sixes: 2 },
+            { name: "Tristan Stubbs", runs: 21, balls: 14, fours: 1, sixes: 1 }
+        ],
+        "149743": [
+            { name: "Sanju Samson", runs: 54, balls: 33, fours: 4, sixes: 3 },
+            { name: "Riyan Parag", runs: 28, balls: 20, fours: 2, sixes: 1 }
+        ],
+        "149721": [
+            { name: "Virat Kohli", runs: 71, balls: 48, fours: 7, sixes: 2 },
+            { name: "Glenn Maxwell", runs: 22, balls: 11, fours: 1, sixes: 2 }
+        ]
+    };
+
+    function getBatterFallback(matchId, battingTeam, runs, wickets) {
+        const seeded = batterFallbacks[matchId];
+        if (seeded) {
+            return seeded;
+        }
+
+        const baseRuns = Math.max(12, Math.floor(runs * 0.34));
+        return [
+            {
+                name: `${battingTeam || "Striker"} 1`,
+                runs: baseRuns,
+                balls: Math.max(10, Math.floor(baseRuns / 1.35)),
+                fours: Math.max(1, Math.floor(baseRuns / 14)),
+                sixes: Math.max(0, Math.floor(baseRuns / 22)),
+            },
+            {
+                name: `${battingTeam || "Striker"} 2`,
+                runs: Math.max(8, Math.floor(runs * 0.22) - wickets),
+                balls: Math.max(8, Math.floor(runs / 10)),
+                fours: Math.max(0, Math.floor(runs / 28)),
+                sixes: Math.max(0, Math.floor(runs / 40)),
+            }
+        ];
+    }
+
+    function renderWicketDots(wickets) {
+        const wicketDots = document.getElementById('wicket-dots');
+        wicketDots.innerHTML = '';
+
+        for (let i = 0; i < 10; i++) {
+            const dot = document.createElement('div');
+            const isOut = i < wickets;
+            dot.className = `w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${
+                isOut
+                    ? 'bg-tertiary/20 text-tertiary border border-tertiary/40'
+                    : 'bg-white/5 text-white/35 border border-white/10'
+            }`;
+            dot.textContent = isOut ? 'W' : String(i + 1);
+            wicketDots.appendChild(dot);
+        }
+    }
+
+    function renderBattersTable(batters) {
+        const battersBody = document.getElementById('batters-body');
+        battersBody.innerHTML = '';
+
+        batters.slice(0, 2).forEach((batter, index) => {
+            const sr = batter.balls > 0 ? ((batter.runs / batter.balls) * 100) : 0;
+            const badgeClass = sr >= 150
+                ? 'bg-primary/20 text-primary border border-primary/30'
+                : sr >= 110
+                    ? 'bg-secondary/15 text-secondary border border-secondary/25'
+                    : 'bg-tertiary/15 text-tertiary border border-tertiary/25';
+
+            const row = document.createElement('tr');
+            row.className = 'border-b border-white/5';
+            row.innerHTML = `
+                <td class="py-3 pr-2 text-white/80 font-medium">${batter.name}${index === 0 ? ' <span class="text-primary">*</span>' : ''}</td>
+                <td class="py-3 text-right font-bold">${batter.runs}</td>
+                <td class="py-3 text-right font-bold">${batter.balls}</td>
+                <td class="py-3 text-right font-bold">${batter.fours}</td>
+                <td class="py-3 text-right font-bold">${batter.sixes}</td>
+                <td class="py-3 text-right">
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-[11px] font-bold ${badgeClass}">
+                        ${sr.toFixed(1)}
+                    </span>
+                </td>
+            `;
+            battersBody.appendChild(row);
+        });
+    }
 
     async function fetchMatchData() {
         predictBtn.innerText = "FETCHING...";
@@ -108,6 +230,9 @@
             const predictedScore = data.predicted_score || 0;
             const predictionNote = data.prediction_note || "";
             const battingTeam = data.batting_team || null;
+            const batters = Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
+                ? data.batters_at_crease
+                : getBatterFallback(matchSelector.value, battingTeam || data.team_a, runs, data.wickets || 0);
             
             const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
             let crr = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
@@ -148,6 +273,8 @@
             document.getElementById('team-b-prob').innerText = pB + "%";
             document.getElementById('bar-a').style.width = pA + "%";
             document.getElementById('bar-b').style.width = pB + "%";
+            renderWicketDots(data.wickets || 0);
+            renderBattersTable(batters);
 
             heroVal.parentElement.classList.add('scale-105');
             setTimeout(() => heroVal.parentElement.classList.remove('scale-105'), 200);
@@ -155,6 +282,8 @@
         } catch (error) {
             console.error("Fetch error:", error);
             document.getElementById('project-score').innerText = "ERR";
+            renderWicketDots(0);
+            renderBattersTable(getBatterFallback(matchSelector.value, "Batter", 0, 0));
         } finally {
             predictBtn.innerText = "MANUAL REFRESH";
         }

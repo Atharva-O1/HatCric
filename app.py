@@ -127,6 +127,45 @@ def first_innings_win_probability(projected_total: int, overs_bowled: float, wic
     advantage = projected_total - (par_score - wickets_penalty)
     return round(clamp(50 + advantage * 0.6, 10, 90))
 
+
+def _safe_int(value, default: int = 0) -> int:
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return default
+
+
+def extract_batters_at_crease(innings_data: dict | None) -> list[dict]:
+    batsmen = (innings_data or {}).get("batsman") or []
+    active = [
+        batter for batter in batsmen
+        if str(batter.get("outdec", "")).strip().lower() == "batting"
+    ]
+
+    if len(active) < 2:
+        not_out = [
+            batter for batter in batsmen
+            if not str(batter.get("outdec", "")).strip()
+        ]
+        for batter in not_out:
+            if batter not in active:
+                active.append(batter)
+            if len(active) >= 2:
+                break
+
+    return [
+        {
+            "name": batter.get("nickname") or batter.get("name") or "Batter",
+            "runs": _safe_int(batter.get("runs")),
+            "balls": _safe_int(batter.get("balls")),
+            "fours": _safe_int(batter.get("fours")),
+            "sixes": _safe_int(batter.get("sixes")),
+            "strike_rate": str(batter.get("strkrate", "0")),
+            "is_batting": str(batter.get("outdec", "")).strip().lower() == "batting",
+        }
+        for batter in active[:2]
+    ]
+
 def get_cached(match_id: str):
     entry = _cache.get(match_id)
     if entry is None: return None
@@ -199,6 +238,8 @@ def parse_score_response(data, match_id: str | None = None):
             "team_a": team1, "team_b": team2, "status": status,
             "is_complete": is_complete, "state": state,
             "batting_team": None,
+            "wickets_in_hand": 10,
+            "batters_at_crease": [],
             "predicted_score": 0,
             "prediction_note": "Awaiting live data",
             "win_probability": {"team_a": 50, "team_b": 50}
@@ -265,7 +306,9 @@ def parse_score_response(data, match_id: str | None = None):
                     "overs_bowled": last_innings.get("overs", 0.0),
                     "batting_team": batting_team
                 })
-             
+
+            res["batters_at_crease"] = extract_batters_at_crease(last_innings)
+              
             # Always safely calculate the target from the 1st innings
             if len(sc) >= 2:
                 res["target"] = sc[0].get("score", 0) + 1
@@ -291,6 +334,7 @@ def parse_score_response(data, match_id: str | None = None):
         runs = int(res["current_score"] or 0)
         wickets = int(res["wickets"] or 0)
         overs_bowled = float(res["overs_bowled"] or 0)
+        res["wickets_in_hand"] = max(0, 10 - wickets)
 
         if not res["is_complete"] and res["state"] != "Preview":
             if res["innings"] == 2 and res["target"] > 0:
@@ -330,7 +374,18 @@ def parse_score_response(data, match_id: str | None = None):
 
     except Exception as e:
         logger.error(f"Parser Error: {e}")
-        return {"innings": 1, "target": 0, "current_score": 0, "wickets": 0, "overs_bowled": 0, "is_complete": False, "state": "Error"}
+        return {
+            "innings": 1,
+            "target": 0,
+            "current_score": 0,
+            "wickets": 0,
+            "wickets_in_hand": 10,
+            "overs_bowled": 0,
+            "is_complete": False,
+            "state": "Error",
+            "batters_at_crease": [],
+            "win_probability": {"team_a": 50, "team_b": 50},
+        }
 
 @app.route("/api/match/<string:match_id>", methods=["GET"])
 def get_match_data(match_id: str):
@@ -340,6 +395,11 @@ def get_match_data(match_id: str):
             "wickets": 3, "overs_bowled": 14.2, "team_a": "RR", "team_b": "MI",
             "is_complete": False, "state": "Live", "status": "Live Match",
             "batting_team": "MI",
+            "wickets_in_hand": 7,
+            "batters_at_crease": [
+                {"name": "Yashasvi Jaiswal", "runs": 41, "balls": 24, "fours": 5, "sixes": 2, "strike_rate": "170.83", "is_batting": True},
+                {"name": "Sanju Samson", "runs": 36, "balls": 29, "fours": 3, "sixes": 1, "strike_rate": "124.14", "is_batting": True},
+            ],
             "predicted_score": 185,
             "prediction_note": "65 needed from 34 balls at 11.47 RPO",
             "win_probability": {"team_a": 42, "team_b": 58}
