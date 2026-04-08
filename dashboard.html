@@ -36,9 +36,10 @@
             <div class="w-full md:w-2/3">
                 <label class="block text-secondary uppercase text-xs font-bold mb-2">Select Live T20 Match</label>
                 <select id="match-selector" class="w-full bg-black border border-white/10 text-white py-4 px-6 rounded-lg outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
-                    <option value="mock_test">Developer Mode: Mock Game Data</option>
-                    <option value="149743">RR vs MI (Match 13 - LIVE TONIGHT)</option>
-                    <option value="149721">RCB vs CSK (Match 11 - Replay)</option>
+                    <option value="mock_test">Mock Game Data</option>
+                    <option value="149746">GT vs DC (Match 14)</option>
+                    <option value="149743">RR vs MI (Match 13)</option>
+                    <option value="149721">RCB vs CSK (Match 11)</option>
                 </select>
             </div>
             <button id="predict-btn" class="velocity-gradient text-black font-black py-4 px-10 rounded-lg w-full md:w-1/3">
@@ -104,6 +105,9 @@
             const overs = data.overs_bowled || 0;
             const innings = data.innings || 1;
             const target = data.target || 0;
+            const predictedScore = data.predicted_score || 0;
+            const predictionNote = data.prediction_note || "";
+            const battingTeam = data.batting_team || null;
             
             const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
             let crr = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
@@ -126,17 +130,17 @@
                 heroSub.innerText = data.status;
             } else if (innings === 2) {
                 heroLabel.innerText = "TARGET CHASE";
-                heroVal.innerText = target;
-                heroSub.innerText = `${Math.max(0, target - runs)} Runs Needed`;
+                heroVal.innerText = predictedScore || target;
+                heroSub.innerText = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
             } else {
                 heroLabel.innerText = "PROJECTED SCORE";
-                heroVal.innerText = Math.floor(crr * 20);
-                heroSub.innerText = "First Innings Live";
+                heroVal.innerText = predictedScore || Math.floor(crr * 20);
+                heroSub.innerText = predictionNote || "First Innings Live";
             }
 
             const isLive = !data.is_complete && data.state !== "Preview";
-            document.getElementById('team-a-name').innerText = data.team_a + (isLive && innings === 1 ? " (BATTING)" : "");
-            document.getElementById('team-b-name').innerText = data.team_b + (isLive && innings === 2 ? " (BATTING)" : "");
+            document.getElementById('team-a-name').innerText = data.team_a + (isLive && battingTeam === data.team_a ? " (BATTING)" : "");
+            document.getElementById('team-b-name').innerText = data.team_b + (isLive && battingTeam === data.team_b ? " (BATTING)" : "");
 
             const pA = data.win_probability.team_a;
             const pB = data.win_probability.team_b;
@@ -159,10 +163,8 @@
     predictBtn.addEventListener('click', fetchMatchData);
     matchSelector.addEventListener('change', fetchMatchData);
     
-    // Fetch ONCE when the page loads
     fetchMatchData();
 
-    // AUTO-POLLING HAS BEEN REMOVED TO PROTECT YOUR 200/MONTH QUOTA
     </script>
 </body>
 </html>
