@@ -13,6 +13,8 @@ def main():
     print("Trained model saved to:", MODEL_PATH)
     print("Matches:", model["trained_on_matches"])
     print("Training accuracy:", model["training_accuracy"])
+    print("Validation accuracy:", model.get("validation_accuracy"))
+    print("Validation log loss:", model.get("validation_log_loss"))
 
 
 if __name__ == "__main__":

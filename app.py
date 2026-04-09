@@ -241,6 +241,56 @@ def get_match_info_from_live(match_id: str) -> dict:
         logger.warning("Live matches enrichment failed for %s: %s", match_id, exc)
     return {}
 
+
+def serialize_match_info(match_info: dict) -> dict | None:
+    match_id = match_info.get("matchId")
+    if match_id is None:
+        return None
+
+    team1_info = match_info.get("team1", {}) or {}
+    team2_info = match_info.get("team2", {}) or {}
+    team_a = team1_info.get("shortName") or team1_info.get("teamSName") or team1_info.get("teamName")
+    team_b = team2_info.get("shortName") or team2_info.get("teamSName") or team2_info.get("teamName")
+    if not team_a or not team_b:
+        return None
+
+    state = match_info.get("state") or "Unknown"
+    series_name = match_info.get("seriesName") or ""
+    status = match_info.get("status") or ""
+    label = f"{team_a} vs {team_b}"
+    badge = state
+
+    match_desc = match_info.get("matchDesc") or match_info.get("matchDescription") or ""
+    if match_desc:
+        badge = match_desc
+    elif series_name:
+        badge = series_name
+
+    return {
+        "match_id": str(match_id),
+        "team_a": team_a,
+        "team_b": team_b,
+        "label": label,
+        "badge": badge,
+        "state": state,
+        "status": status,
+        "series_name": series_name,
+        "venue": {
+            "ground": (match_info.get("venueInfo", {}) or {}).get("ground", ""),
+            "city": (match_info.get("venueInfo", {}) or {}).get("city", ""),
+        },
+    }
+
+
+def is_ipl_t20_match(match_info: dict) -> bool:
+    series_name = str(match_info.get("seriesName") or "").lower()
+    match_format = str(match_info.get("matchFormat") or match_info.get("matchType") or "").lower()
+    if "indian premier league" not in series_name and "ipl" not in series_name:
+        return False
+    if match_format and "t20" not in match_format:
+        return False
+    return True
+
 def parse_score_response(data, match_id: str | None = None):
     try:
         is_complete = data.get("ismatchcomplete", False)
@@ -425,6 +475,35 @@ def parse_score_response(data, match_id: str | None = None):
             "batters_at_crease": [],
             "win_probability": {"team_a": 50, "team_b": 50},
         }
+
+
+@app.route("/api/matches", methods=["GET"])
+def get_matches():
+    try:
+        serialized = []
+        for match_info in fetch_live_matches():
+            if not is_ipl_t20_match(match_info):
+                continue
+            item = serialize_match_info(match_info)
+            if item and item["state"] != "Complete":
+                serialized.append(item)
+
+        state_order = {"Live": 0, "In Progress": 0, "Complete": 1, "Preview": 2}
+        serialized.sort(
+            key=lambda item: (
+                state_order.get(item["state"], 3),
+                item["label"],
+            )
+        )
+
+        return jsonify({
+            "matches": serialized,
+            "count": len(serialized),
+        })
+    except Exception as exc:
+        logger.error("Failed to fetch match list: %s", exc)
+        return jsonify({"error": "Unable to fetch match list", "matches": []}), 500
+
 
 @app.route("/api/match/<string:match_id>", methods=["GET"])
 def get_match_data(match_id: str):

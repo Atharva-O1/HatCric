@@ -5,3 +5,4 @@ Flask==3.1.1
 Flask-Cors==5.0.1
 python-dotenv==1.1.0
 requests==2.32.3
+catboost==1.2.10
