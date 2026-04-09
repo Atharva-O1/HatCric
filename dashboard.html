@@ -469,59 +469,115 @@
             </div>
         </section>
     </main>
-
 <script>
     const matchSelector = document.getElementById('match-selector');
-    const predictBtn    = document.getElementById('predict-btn');
+    const predictBtn = document.getElementById('predict-btn');
 
-    /* ── Theme toggle ── */
     const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon   = document.getElementById('theme-icon');
-    const themeLabel  = document.getElementById('theme-label');
+    const themeIcon = document.getElementById('theme-icon');
+    const themeLabel = document.getElementById('theme-label');
 
-    const saved = localStorage.getItem('hatcric-theme')
-        || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    if (saved === 'light') applyLight();
+    const ddWrap = document.getElementById('match-dropdown');
+    const ddBtn = document.getElementById('match-dropdown-btn');
+    const ddMenu = document.getElementById('match-dropdown-menu');
+    const ddLabel = document.getElementById('match-dropdown-label');
+    const ddItems = ddMenu.querySelectorAll('.hc-dropdown-item');
+
+    const errorBanner = document.getElementById('error-banner');
+    const errorMsg = document.getElementById('error-msg');
+    const errorDetail = document.getElementById('error-detail');
+    const errorRetry = document.getElementById('error-retry');
+
+    const pollRing = document.getElementById('poll-ring');
+    const pollRingSeconds = document.getElementById('poll-ring-seconds');
+    const pollText = document.getElementById('poll-text');
+    const pollSelect = document.getElementById('poll-interval');
+
+    const batterFallbacks = {
+        mock_test: [
+            { name: "Jake Fraser-McGurk", runs: 41, balls: 24, fours: 5, sixes: 2 },
+            { name: "KL Rahul", runs: 36, balls: 29, fours: 3, sixes: 1 }
+        ],
+        "149746": [
+            { name: "KL Rahul", runs: 52, balls: 31, fours: 6, sixes: 2 },
+            { name: "Tristan Stubbs", runs: 21, balls: 14, fours: 1, sixes: 1 }
+        ],
+        "149743": [
+            { name: "Sanju Samson", runs: 54, balls: 33, fours: 4, sixes: 3 },
+            { name: "Riyan Parag", runs: 28, balls: 20, fours: 2, sixes: 1 }
+        ],
+        "149721": [
+            { name: "Virat Kohli", runs: 71, balls: 48, fours: 7, sixes: 2 },
+            { name: "Glenn Maxwell", runs: 22, balls: 11, fours: 1, sixes: 2 }
+        ]
+    };
+
+    const CIRCUMFERENCE = 43.98;
+    const POLL_DEFAULT = 15;
+
+    let pollInterval = POLL_DEFAULT;
+    let pollTimer = null;
+    let countdownTimer = null;
+    let secondsLeft = POLL_DEFAULT;
+    let isFirstLoad = true;
+
+    let lastRenderedState = {
+        wickets: 0,
+        batters: [],
+    };
+
+    const savedTheme =
+        localStorage.getItem('hatcric-theme') ||
+        (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+
+    if (savedTheme === 'light') {
+        applyLight(false);
+    } else {
+        applyDark(false);
+    }
 
     themeToggle.addEventListener('click', () => {
-        document.documentElement.classList.contains('light') ? applyDark() : applyLight();
+        if (document.documentElement.classList.contains('light')) {
+            applyDark();
+        } else {
+            applyLight();
+        }
     });
 
-    function applyLight() {
+    function applyLight(shouldRerender = true) {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
-        themeIcon.textContent  = 'dark_mode';
+        themeIcon.textContent = 'dark_mode';
         themeLabel.textContent = 'Dark';
         localStorage.setItem('hatcric-theme', 'light');
-    }
-    function applyDark() {
-        document.documentElement.classList.remove('light');
-        document.documentElement.classList.add('dark');
-        themeIcon.textContent  = 'light_mode';
-        themeLabel.textContent = 'Light';
-        localStorage.setItem('hatcric-theme', 'dark');
+        if (shouldRerender) rerenderThemeSensitiveUI();
     }
 
-    /* ── Custom match dropdown ── */
-    const ddWrap   = document.getElementById('match-dropdown');
-    const ddBtn    = document.getElementById('match-dropdown-btn');
-    const ddMenu   = document.getElementById('match-dropdown-menu');
-    const ddLabel  = document.getElementById('match-dropdown-label');
-    const ddItems  = ddMenu.querySelectorAll('.hc-dropdown-item');
+    function applyDark(shouldRerender = true) {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+        themeIcon.textContent = 'light_mode';
+        themeLabel.textContent = 'Light';
+        localStorage.setItem('hatcric-theme', 'dark');
+        if (shouldRerender) rerenderThemeSensitiveUI();
+    }
 
     ddBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         ddWrap.classList.toggle('open');
     });
 
-    ddItems.forEach(item => {
+    ddItems.forEach((item) => {
         item.addEventListener('click', () => {
-            const val  = item.dataset.value;
+            const val = item.dataset.value;
             const text = item.childNodes[0].textContent.trim();
             const badge = item.querySelector('.dd-badge');
+
             ddLabel.textContent = badge ? `${text} — ${badge.textContent}` : text;
-            ddItems.forEach(i => i.classList.remove('selected'));
+
+            ddItems.forEach((i) => i.classList.remove('selected'));
             item.classList.add('selected');
+
             matchSelector.value = val;
             matchSelector.dispatchEvent(new Event('change'));
             ddWrap.classList.remove('open');
@@ -536,80 +592,82 @@
         if (e.key === 'Escape') ddWrap.classList.remove('open');
     });
 
-    /* ── Batter fallbacks ── */
-    const batterFallbacks = {
-        mock_test: [
-            { name: "Jake Fraser-McGurk", runs: 41, balls: 24, fours: 5, sixes: 2 },
-            { name: "KL Rahul",           runs: 36, balls: 29, fours: 3, sixes: 1 }
-        ],
-        "149746": [
-            { name: "KL Rahul",       runs: 52, balls: 31, fours: 6, sixes: 2 },
-            { name: "Tristan Stubbs", runs: 21, balls: 14, fours: 1, sixes: 1 }
-        ],
-        "149743": [
-            { name: "Sanju Samson", runs: 54, balls: 33, fours: 4, sixes: 3 },
-            { name: "Riyan Parag",  runs: 28, balls: 20, fours: 2, sixes: 1 }
-        ],
-        "149721": [
-            { name: "Virat Kohli",    runs: 71, balls: 48, fours: 7, sixes: 2 },
-            { name: "Glenn Maxwell", runs: 22, balls: 11, fours: 1, sixes: 2 }
-        ]
-    };
-
     function getBatterFallback(matchId, battingTeam, runs, wickets) {
         const seeded = batterFallbacks[matchId];
         if (seeded) return seeded;
+
         const baseRuns = Math.max(12, Math.floor(runs * 0.34));
         return [
-            { name: `${battingTeam || "Striker"} 1`, runs: baseRuns,                               balls: Math.max(10, Math.floor(baseRuns / 1.35)), fours: Math.max(1, Math.floor(baseRuns / 14)), sixes: Math.max(0, Math.floor(baseRuns / 22)) },
-            { name: `${battingTeam || "Striker"} 2`, runs: Math.max(8, Math.floor(runs * 0.22) - wickets), balls: Math.max(8,  Math.floor(runs / 10)),     fours: Math.max(0, Math.floor(runs / 28)),    sixes: Math.max(0, Math.floor(runs / 40)) }
+            {
+                name: `${battingTeam || 'Striker'} 1`,
+                runs: baseRuns,
+                balls: Math.max(10, Math.floor(baseRuns / 1.35)),
+                fours: Math.max(1, Math.floor(baseRuns / 14)),
+                sixes: Math.max(0, Math.floor(baseRuns / 22))
+            },
+            {
+                name: `${battingTeam || 'Striker'} 2`,
+                runs: Math.max(8, Math.floor(runs * 0.22) - wickets),
+                balls: Math.max(8, Math.floor(runs / 10)),
+                fours: Math.max(0, Math.floor(runs / 28)),
+                sixes: Math.max(0, Math.floor(runs / 40))
+            }
         ];
     }
 
-    /* ── Wicket dots ── */
     function renderWicketDots(wickets) {
         const container = document.getElementById('wicket-dots');
         container.innerHTML = '';
+
         for (let i = 0; i < 10; i++) {
             const dot = document.createElement('div');
             const isOut = i < wickets;
-            dot.className = `w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black`;
             const isLight = document.documentElement.classList.contains('light');
+
+            dot.className = 'w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black';
             dot.style.cssText = isOut
                 ? (isLight
                     ? 'background:#fee2e2;color:#be123c;border:1px solid rgba(190,18,60,0.30);'
                     : 'background:rgba(255,110,129,0.20);color:#ff6e81;border:1px solid rgba(255,110,129,0.40);')
                 : 'background:var(--surface);color:var(--text-dim);border:1px solid var(--border-med);';
+
             dot.textContent = isOut ? 'W' : String(i + 1);
             container.appendChild(dot);
         }
     }
 
-    /* ── Batters table ── */
     function renderBattersTable(batters) {
         const body = document.getElementById('batters-body');
         body.innerHTML = '';
+
         batters.slice(0, 2).forEach((batter, index) => {
-            const sr = batter.balls > 0 ? ((batter.runs / batter.balls) * 100) : 0;
+            const sr = batter.strike_rate !== undefined && batter.strike_rate !== null && batter.strike_rate !== ''
+                ? Number(batter.strike_rate)
+                : (batter.balls > 0 ? ((batter.runs / batter.balls) * 100) : 0);
+
             const isLight = document.documentElement.classList.contains('light');
+
             let badgeBg, badgeColor, badgeBorder;
             if (sr >= 150) {
-                badgeBg     = isLight ? '#dcfce7' : 'rgba(142,255,113,0.15)';
-                badgeColor  = isLight ? '#15803d' : '#8eff71';
+                badgeBg = isLight ? '#dcfce7' : 'rgba(142,255,113,0.15)';
+                badgeColor = isLight ? '#15803d' : '#8eff71';
                 badgeBorder = isLight ? 'rgba(22,163,74,0.30)' : 'rgba(142,255,113,0.30)';
             } else if (sr >= 110) {
-                badgeBg     = isLight ? '#cffafe' : 'rgba(0,251,251,0.12)';
-                badgeColor  = isLight ? '#164e63' : '#00fbfb';
-                badgeBorder = isLight ? 'rgba(22,78,99,0.35)'  : 'rgba(0,251,251,0.25)';
+                badgeBg = isLight ? '#cffafe' : 'rgba(0,251,251,0.12)';
+                badgeColor = isLight ? '#164e63' : '#00fbfb';
+                badgeBorder = isLight ? 'rgba(22,78,99,0.35)' : 'rgba(0,251,251,0.25)';
             } else {
-                badgeBg     = isLight ? '#ffe4e6' : 'rgba(255,110,129,0.12)';
-                badgeColor  = isLight ? '#be123c' : '#ff6e81';
+                badgeBg = isLight ? '#ffe4e6' : 'rgba(255,110,129,0.12)';
+                badgeColor = isLight ? '#be123c' : '#ff6e81';
                 badgeBorder = isLight ? 'rgba(190,18,60,0.25)' : 'rgba(255,110,129,0.25)';
             }
+
             const row = document.createElement('tr');
             row.style.borderBottom = '1px solid var(--border)';
             row.innerHTML = `
-                <td class="py-3 pr-2 hc-td-muted font-medium">${batter.name}${index === 0 ? ` <span style="color:${document.documentElement.classList.contains('light') ? '#16a34a' : '#8eff71'}">*</span>` : ''}</td>
+                <td class="py-3 pr-2 hc-td-muted font-medium">
+                    ${batter.name}${index === 0 ? ` <span style="color:${isLight ? '#16a34a' : '#8eff71'}">*</span>` : ''}
+                </td>
                 <td class="py-3 text-right font-bold hc-td">${batter.runs}</td>
                 <td class="py-3 text-right font-bold hc-td">${batter.balls}</td>
                 <td class="py-3 text-right font-bold hc-td">${batter.fours}</td>
@@ -618,102 +676,84 @@
                     <span style="display:inline-flex;align-items:center;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeBorder};">
                         ${sr.toFixed(1)}
                     </span>
-                </td>`;
+                </td>
+            `;
             body.appendChild(row);
         });
     }
 
-    /* ── Main fetch ── */
-    async function fetchMatchData() {
-        predictBtn.innerText = "FETCHING...";
-        try {
-            const response = await fetch(`http://127.0.0.1:5000/api/match/${matchSelector.value}`);
-            if (!response.ok) throw new Error(`API Error: ${response.status}`);
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
+    function rerenderThemeSensitiveUI() {
+        renderWicketDots(lastRenderedState.wickets || 0);
+        renderBattersTable(lastRenderedState.batters || []);
+    }
 
-            const runs           = data.current_score || 0;
-            const overs          = data.overs_bowled  || 0;
-            const innings        = data.innings        || 1;
-            const target         = data.target         || 0;
-            const predictedScore = data.predicted_score || 0;
-            const predictionNote = data.prediction_note || "";
-            const battingTeam    = data.batting_team   || null;
-            const batters        = Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
-                ? data.batters_at_crease
-                : getBatterFallback(matchSelector.value, battingTeam || data.team_a, runs, data.wickets || 0);
+    function showSkeleton() {
+        if (!isFirstLoad) return;
 
-            const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
-            const crr       = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
+        const skels = ['skel-score', 'skel-overs', 'skel-crr', 'skel-hero', 'skel-prob-a', 'skel-prob-b'];
+        const vals = ['score-val', 'overs-val', 'crr-val', 'hero-val'];
 
-            document.getElementById('current-score').innerHTML = `${runs}<span style="color:#ff6e81">/${data.wickets}</span>`;
-            document.getElementById('current-overs').innerText = overs;
-            document.getElementById('current-crr').innerText   = crr;
+        skels.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+        });
 
-            const heroVal   = document.getElementById('project-score');
-            const heroLabel = document.getElementById('hero-label');
-            const heroSub   = document.getElementById('hero-subtext');
+        vals.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
 
-            if (data.is_complete) {
-                heroLabel.innerText = "MATCH FINISHED";
-                heroVal.innerText   = "END";
-                heroSub.innerText   = data.status;
-            } else if (data.state === "Preview") {
-                heroLabel.innerText = "UPCOMING MATCH";
-                heroVal.innerText   = "PRE";
-                heroSub.innerText   = data.status;
-            } else if (innings === 2) {
-                heroLabel.innerText = "TARGET CHASE";
-                heroVal.innerText   = predictedScore || target;
-                heroSub.innerText   = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
-            } else {
-                heroLabel.innerText = "PROJECTED SCORE";
-                heroVal.innerText   = predictedScore || Math.floor(crr * 20);
-                heroSub.innerText   = predictionNote || "First Innings Live";
-            }
+        document.getElementById('hero-subtext').style.opacity = '0';
 
-            const isLive = !data.is_complete && data.state !== "Preview";
-            document.getElementById('team-a-name').innerText = data.team_a + (isLive && battingTeam === data.team_a ? " (BATTING)" : "");
-            document.getElementById('team-b-name').innerText = data.team_b + (isLive && battingTeam === data.team_b ? " (BATTING)" : "");
+        const battersBody = document.getElementById('batters-body');
+        battersBody.innerHTML = `
+            <tr><td colspan="6" style="padding:16px 0;">
+                <span class="skel-line" style="display:block;height:18px;width:55%;margin-bottom:10px;"></span>
+                <span class="skel-line" style="display:block;height:18px;width:45%;"></span>
+            </td></tr>
+        `;
 
-            const pA = data.win_probability.team_a;
-            const pB = data.win_probability.team_b;
-            document.getElementById('team-a-prob').innerText      = pA + "%";
-            document.getElementById('team-b-prob').innerText      = pB + "%";
-            document.getElementById('bar-a').style.width          = pA + "%";
-            document.getElementById('bar-b').style.width          = pB + "%";
-
-            renderWicketDots(data.wickets || 0);
-            renderBattersTable(batters);
-
-            heroVal.parentElement.classList.add('scale-105');
-            setTimeout(() => heroVal.parentElement.classList.remove('scale-105'), 200);
-
-        } catch (error) {
-            console.error("Fetch error:", error);
-            document.getElementById('project-score').innerText = "ERR";
-            renderWicketDots(0);
-            renderBattersTable(getBatterFallback(matchSelector.value, "Batter", 0, 0));
-        } finally {
-            predictBtn.innerText = "MANUAL REFRESH";
+        const wicketDots = document.getElementById('wicket-dots');
+        wicketDots.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const d = document.createElement('span');
+            d.className = 'skel-line';
+            d.style.cssText = 'display:inline-block;width:32px;height:32px;border-radius:50%;';
+            wicketDots.appendChild(d);
         }
     }
 
-    /* ── Polling ── */
-    const CIRCUMFERENCE = 43.98; // 2π × r=7
-    const POLL_DEFAULT  = 15;
-    let pollInterval    = POLL_DEFAULT;
-    let pollTimer       = null;
-    let countdownTimer  = null;
-    let secondsLeft     = POLL_DEFAULT;
+    function hideSkeleton() {
+        const skels = ['skel-score', 'skel-overs', 'skel-crr', 'skel-hero', 'skel-prob-a', 'skel-prob-b'];
+        const vals = ['score-val', 'overs-val', 'crr-val', 'hero-val'];
 
-    const pollRing        = document.getElementById('poll-ring');
-    const pollRingSeconds = document.getElementById('poll-ring-seconds');
-    const pollText        = document.getElementById('poll-text');
-    const pollSelect      = document.getElementById('poll-interval');
+        skels.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+
+        vals.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = '';
+        });
+
+        document.getElementById('hero-subtext').style.opacity = '';
+        isFirstLoad = false;
+    }
+
+    function showError(msg, detail) {
+        errorMsg.textContent = msg || 'Could not reach the server';
+        errorDetail.textContent = detail || 'Last attempt failed — data shown may be stale';
+        errorBanner.classList.add('visible');
+    }
+
+    function hideError() {
+        errorBanner.classList.remove('visible');
+    }
 
     function setRing(state) {
         pollRing.className = 'poll-ring-fill ' + state;
+
         if (state === 'fetching') {
             pollRingSeconds.textContent = '…';
             pollText.textContent = 'Fetching latest data…';
@@ -734,10 +774,13 @@
 
     function startCountdown() {
         clearInterval(countdownTimer);
-        if (pollInterval === 0) { setRing('off'); return; }
-        secondsLeft = pollInterval;
 
-        /* snap ring to full immediately (no transition), then let CSS transition drain it */
+        if (pollInterval === 0) {
+            setRing('off');
+            return;
+        }
+
+        secondsLeft = pollInterval;
         pollRing.style.transition = 'none';
         pollRing.style.strokeDashoffset = '0';
         setRing('');
@@ -757,7 +800,12 @@
     function schedulePoll() {
         clearTimeout(pollTimer);
         clearInterval(countdownTimer);
-        if (pollInterval === 0) { setRing('off'); return; }
+
+        if (pollInterval === 0) {
+            setRing('off');
+            return;
+        }
+
         startCountdown();
         pollTimer = setTimeout(async () => {
             await fetchMatchData();
@@ -765,145 +813,80 @@
         }, pollInterval * 1000);
     }
 
-    pollSelect.addEventListener('change', () => {
-        pollInterval = parseInt(pollSelect.value);
-        clearTimeout(pollTimer);
-        clearInterval(countdownTimer);
-        schedulePoll();
-    });
-
-    /* ── Predict button ── */
-    predictBtn.addEventListener('click', async () => {
-        clearTimeout(pollTimer);
-        clearInterval(countdownTimer);
-        await fetchMatchData();
-        schedulePoll();
-    });
-
-    /* ── Match selector ── */
-    matchSelector.addEventListener('change', async () => {
-        clearTimeout(pollTimer);
-        clearInterval(countdownTimer);
-        await fetchMatchData();
-        schedulePoll();
-    });
-
-    /* ── Skeleton helpers ── */
-    let isFirstLoad = true;
-
-    function showSkeleton() {
-        if (!isFirstLoad) return;
-        const skels = ['skel-score','skel-overs','skel-crr','skel-hero','skel-prob-a','skel-prob-b'];
-        const vals  = ['score-val','overs-val','crr-val','hero-val'];
-        skels.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
-        vals.forEach(id  => { const el = document.getElementById(id);  if (el) el.style.display = 'none';  });
-        document.getElementById('hero-subtext').style.opacity = '0';
-        const battersBody = document.getElementById('batters-body');
-        battersBody.innerHTML = `
-            <tr><td colspan="6" style="padding:16px 0;">
-                <span class="skel-line" style="display:block;height:18px;width:55%;margin-bottom:10px;"></span>
-                <span class="skel-line" style="display:block;height:18px;width:45%;"></span>
-            </td></tr>`;
-        const wicketDots = document.getElementById('wicket-dots');
-        wicketDots.innerHTML = '';
-        for (let i = 0; i < 10; i++) {
-            const d = document.createElement('span');
-            d.className = 'skel-line';
-            d.style.cssText = 'display:inline-block;width:32px;height:32px;border-radius:50%;';
-            wicketDots.appendChild(d);
-        }
-    }
-
-    function hideSkeleton() {
-        const skels = ['skel-score','skel-overs','skel-crr','skel-hero','skel-prob-a','skel-prob-b'];
-        const vals  = ['score-val','overs-val','crr-val','hero-val'];
-        skels.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none';  });
-        vals.forEach(id  => { const el = document.getElementById(id);  if (el) el.style.display = '';     });
-        document.getElementById('hero-subtext').style.opacity = '';
-        isFirstLoad = false;
-    }
-
-    /* ── Error banner helpers ── */
-    const errorBanner = document.getElementById('error-banner');
-    const errorMsg    = document.getElementById('error-msg');
-    const errorDetail = document.getElementById('error-detail');
-    document.getElementById('error-retry').addEventListener('click', async () => {
-        clearTimeout(pollTimer); clearInterval(countdownTimer);
-        await fetchMatchData();
-        schedulePoll();
-    });
-
-    function showError(msg, detail) {
-        errorMsg.textContent    = msg    || 'Could not reach the server';
-        errorDetail.textContent = detail || 'Last attempt failed — data shown may be stale';
-        errorBanner.classList.add('visible');
-    }
-    function hideError() { errorBanner.classList.remove('visible'); }
-
-    /* ── Override fetchMatchData to update ring state ── */
-    const _origFetch = fetchMatchData;
-    fetchMatchData = async function() {
+    async function fetchMatchData() {
         setRing('fetching');
         predictBtn.innerText = 'FETCHING...';
         showSkeleton();
+
         try {
             const response = await fetch(`http://127.0.0.1:5000/api/match/${matchSelector.value}`);
             if (!response.ok) throw new Error(`Server responded ${response.status}`);
+
             const data = await response.json();
             if (data.error) throw new Error(data.error);
 
             hideError();
             hideSkeleton();
 
-            const runs           = data.current_score || 0;
-            const overs          = data.overs_bowled  || 0;
-            const innings        = data.innings        || 1;
-            const target         = data.target         || 0;
+            const runs = data.current_score || 0;
+            const overs = data.overs_bowled || 0;
+            const innings = data.innings || 1;
+            const target = data.target || 0;
             const predictedScore = data.predicted_score || 0;
             const predictionNote = data.prediction_note || '';
-            const battingTeam    = data.batting_team   || null;
-            const batters        = Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
+            const battingTeam = data.batting_team || null;
+            const batters = Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
                 ? data.batters_at_crease
                 : getBatterFallback(matchSelector.value, battingTeam || data.team_a, runs, data.wickets || 0);
+            const probability = data.win_probability || {};
 
             const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
-            const crr       = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : '0.00';
+            const crr = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : '0.00';
 
-            document.getElementById('score-val').innerHTML = `${runs}<span style="color:#ff6e81">/${data.wickets}</span>`;
+            document.getElementById('score-val').innerHTML = `${runs}<span style="color:#ff6e81">/${data.wickets || 0}</span>`;
             document.getElementById('overs-val').innerText = overs;
-            document.getElementById('crr-val').innerText   = crr;
+            document.getElementById('crr-val').innerText = crr;
 
-            const heroVal   = document.getElementById('hero-val');
+            const heroVal = document.getElementById('hero-val');
             const heroLabel = document.getElementById('hero-label');
-            const heroSub   = document.getElementById('hero-subtext');
+            const heroSub = document.getElementById('hero-subtext');
 
             if (data.is_complete) {
-                heroLabel.innerText = 'MATCH FINISHED'; heroVal.innerText = 'END'; heroSub.innerText = data.status;
+                heroLabel.innerText = 'MATCH FINISHED';
+                heroVal.innerText = 'END';
+                heroSub.innerText = data.status;
             } else if (data.state === 'Preview') {
-                heroLabel.innerText = 'UPCOMING MATCH'; heroVal.innerText = 'PRE'; heroSub.innerText = data.status;
+                heroLabel.innerText = 'UPCOMING MATCH';
+                heroVal.innerText = 'PRE';
+                heroSub.innerText = data.status;
             } else if (innings === 2) {
                 heroLabel.innerText = 'TARGET CHASE';
-                heroVal.innerText   = predictedScore || target;
-                heroSub.innerText   = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
+                heroVal.innerText = predictedScore || target;
+                heroSub.innerText = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
             } else {
                 heroLabel.innerText = 'PROJECTED SCORE';
-                heroVal.innerText   = predictedScore || Math.floor(crr * 20);
-                heroSub.innerText   = predictionNote || 'First Innings Live';
+                heroVal.innerText = predictedScore || Math.floor(Number(crr) * 20);
+                heroSub.innerText = predictionNote || 'First Innings Live';
             }
 
             const isLive = !data.is_complete && data.state !== 'Preview';
             document.getElementById('team-a-name').innerText = data.team_a + (isLive && battingTeam === data.team_a ? ' (BATTING)' : '');
             document.getElementById('team-b-name').innerText = data.team_b + (isLive && battingTeam === data.team_b ? ' (BATTING)' : '');
 
-            const pA = data.win_probability.team_a;
-            const pB = data.win_probability.team_b;
+            const pA = probability.team_a ?? 50;
+            const pB = probability.team_b ?? 50;
             document.getElementById('team-a-prob').innerText = pA + '%';
             document.getElementById('team-b-prob').innerText = pB + '%';
-            document.getElementById('bar-a').style.width     = pA + '%';
-            document.getElementById('bar-b').style.width     = pB + '%';
+            document.getElementById('bar-a').style.width = pA + '%';
+            document.getElementById('bar-b').style.width = pB + '%';
 
-            renderWicketDots(data.wickets || 0);
-            renderBattersTable(batters);
+            lastRenderedState = {
+                wickets: data.wickets || 0,
+                batters
+            };
+
+            renderWicketDots(lastRenderedState.wickets);
+            renderBattersTable(lastRenderedState.batters);
 
             heroVal.parentElement.classList.add('scale-105');
             setTimeout(() => heroVal.parentElement.classList.remove('scale-105'), 200);
@@ -912,23 +895,57 @@
         } catch (error) {
             console.error('Fetch error:', error);
             hideSkeleton();
+
             const isNet = error instanceof TypeError;
             showError(
                 isNet ? 'Cannot connect to server' : `Error: ${error.message}`,
                 isNet ? 'Make sure your Flask backend is running on port 5000' : 'Check the console for details'
             );
+
             if (isFirstLoad) {
                 document.getElementById('hero-val').innerText = '—';
-                renderWicketDots(0);
-                renderBattersTable(getBatterFallback(matchSelector.value, 'Batter', 0, 0));
+                lastRenderedState = {
+                    wickets: 0,
+                    batters: getBatterFallback(matchSelector.value, 'Batter', 0, 0)
+                };
+                renderWicketDots(lastRenderedState.wickets);
+                renderBattersTable(lastRenderedState.batters);
             }
+
             setRing('error');
         } finally {
             predictBtn.innerText = 'MANUAL REFRESH';
         }
-    };
+    }
 
-    /* ── Boot ── */
+    pollSelect.addEventListener('change', () => {
+        pollInterval = parseInt(pollSelect.value, 10);
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        schedulePoll();
+    });
+
+    predictBtn.addEventListener('click', async () => {
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        await fetchMatchData();
+        schedulePoll();
+    });
+
+    matchSelector.addEventListener('change', async () => {
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        await fetchMatchData();
+        schedulePoll();
+    });
+
+    errorRetry.addEventListener('click', async () => {
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        await fetchMatchData();
+        schedulePoll();
+    });
+
     showSkeleton();
     fetchMatchData().then(() => schedulePoll());
 </script>
