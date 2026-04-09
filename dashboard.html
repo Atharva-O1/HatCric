@@ -17,27 +17,363 @@
         }
     </script>
     <style>
-        body { background-color: #0e0e0e; color: #ffffff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        :root {
+            --bg: #0e0e0e;
+            --header-bg: #0e0e0e;
+            --surface: rgba(255,255,255,0.05);
+            --surface-strong: rgba(255,255,255,0.10);
+            --border: rgba(255,255,255,0.05);
+            --border-med: rgba(255,255,255,0.10);
+            --text-primary: #ffffff;
+            --text-muted: #6b7280;
+            --text-dim: rgba(255,255,255,0.35);
+            --text-dim2: rgba(255,255,255,0.30);
+            --select-bg: #000000;
+        }
+        html.light {
+            --bg: #f0f2f5;
+            --header-bg: #ffffff;
+            --surface: #ffffff;
+            --surface-strong: #eef0f4;
+            --border: rgba(0,0,0,0.09);
+            --border-med: rgba(0,0,0,0.14);
+            --text-primary: #0e0e0e;
+            --text-muted: #64748b;
+            --text-dim: rgba(0,0,0,0.45);
+            --text-dim2: rgba(0,0,0,0.30);
+            --select-bg: #ffffff;
+            /* light-mode accent overrides */
+            --accent-primary: #16a34a;
+            --accent-primary-bg: #dcfce7;
+            --accent-primary-border: rgba(22,163,74,0.25);
+            --accent-secondary: #0e7490;
+            --accent-tertiary: #be123c;
+            --logo-color: #16a34a;
+        }
+
+        /* accent color switches */
+        html.light .hc-label-green { color: var(--accent-primary) !important; }
+        html.light .hc-logo        { color: var(--accent-primary) !important; }
+        html.light #project-score  { color: var(--accent-primary) !important; }
+        html.light #hero-subtext   { color: var(--accent-primary) !important; opacity: 0.7; }
+        html.light .hc-card-accent {
+            background: var(--accent-primary-bg) !important;
+            border-color: var(--accent-primary-border) !important;
+        }
+        html.light #team-b-name    { color: var(--accent-secondary) !important; }
+        html.light #bar-a          { background: var(--accent-primary) !important; }
+        html.light #bar-b          { background: var(--accent-secondary) !important; }
+        html.light .hc-select:focus { outline-color: var(--accent-primary) !important; }
+        html.light .hc-header .material-symbols-outlined { color: var(--accent-primary) !important; }
+        html.light h1              { color: var(--accent-primary) !important; }
+
+        * { transition: background-color 0.2s, border-color 0.2s, color 0.15s; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
         .velocity-gradient { background: linear-gradient(135deg, #8eff71 0%, #2ff801 100%); }
-        .glow-primary { box-shadow: 0 0 25px rgba(43, 232, 0, 0.25); }
+        .glow-primary { box-shadow: 0 0 25px rgba(43, 232, 0, 0.20); }
+
+        .hc-header {
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-med);
+        }
+        .hc-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+        }
+        .hc-card-accent {
+            background: var(--surface-strong);
+            border: 1px solid rgba(142,255,113,0.20);
+            border-radius: 0.5rem;
+        }
+        .hc-select {
+            background: var(--select-bg);
+            border: 1px solid var(--border-med);
+            color: var(--text-primary);
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        .hc-select:focus { outline: 2px solid #8eff71; }
+
+        .hc-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .hc-label-green { color: #8eff71; }
+
+        .hc-value-big { color: var(--text-primary); }
+        .hc-text-dim  { color: var(--text-dim); }
+        .hc-text-dim2 { color: var(--text-dim2); }
+        .hc-border    { border-color: var(--border); }
+        .hc-bar-bg    { background: var(--surface); }
+
+        .hc-th {
+            color: var(--text-dim);
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+        .hc-td { color: var(--text-primary); }
+        .hc-td-muted { color: rgba(255,255,255,0.80); }
+
+        html.light .hc-td-muted { color: rgba(0,0,0,0.75); }
+        html.light .hc-section-label { color: var(--accent-primary) !important; }
+
+        .theme-btn {
+            background: var(--surface);
+            border: 1px solid var(--border-med);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .theme-btn:hover { background: var(--surface-strong); }
+
+        .section-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+        }
+
+        /* ── Poll ring ── */
+        #poll-strip { background:var(--header-bg); border-bottom:1px solid var(--border); padding:6px 24px; display:flex; justify-content:space-between; align-items:center; }
+        #poll-status { font-size:11px; font-weight:600; color:var(--text-muted); display:flex; align-items:center; gap:8px; }
+        .poll-ring-wrap { position:relative; width:20px; height:20px; flex-shrink:0; }
+        .poll-ring-track { fill:none; stroke:var(--border-med); stroke-width:2.5; }
+        .poll-ring-fill  { fill:none; stroke:#8eff71; stroke-width:2.5; stroke-linecap:round;
+                           transform:rotate(-90deg); transform-origin:50% 50%;
+                           transition: stroke-dashoffset 1s linear; }
+        html.light .poll-ring-fill { stroke:#16a34a; }
+        .poll-ring-fill.fetching { stroke:#f59e0b; transition:none; animation: ring-pulse 0.6s ease-in-out infinite alternate; }
+        .poll-ring-fill.error    { stroke:#ff6e81; transition:none; }
+        .poll-ring-fill.off      { stroke:var(--border-med); transition:none; }
+        @keyframes ring-pulse { from { opacity:1; } to { opacity:0.3; } }
+        #poll-ring-seconds { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+                             font-size:7px; font-weight:700; color:var(--text-muted); line-height:1; pointer-events:none; }
+
+        /* ── Skeleton ── */
+        .skeleton { border-radius:6px; background:var(--surface-strong); overflow:hidden; position:relative; }
+        .skeleton::after {
+            content:''; position:absolute; inset:0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%);
+            animation: shimmer 1.4s infinite;
+        }
+        html.light .skeleton::after {
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
+        }
+        @keyframes shimmer { from { transform:translateX(-100%); } to { transform:translateX(100%); } }
+
+        .hc-card.is-loading .hc-value-big,
+        .hc-card-accent.is-loading .text-5xl,
+        .hc-card-accent.is-loading #hero-subtext { opacity:0; }
+        .hc-card.is-loading::after,
+        .hc-card-accent.is-loading::after { content:none; }
+
+        .skel-line { display:block; border-radius:4px; background:var(--surface-strong); position:relative; overflow:hidden; }
+        .skel-line::after {
+            content:''; position:absolute; inset:0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%);
+            animation: shimmer 1.4s infinite;
+        }
+        html.light .skel-line::after {
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
+        }
+
+        /* ── Error banner ── */
+        #error-banner {
+            display:none; width:100%;
+            background:rgba(255,110,129,0.10);
+            border:1px solid rgba(255,110,129,0.30);
+            border-radius:0.5rem;
+            padding:14px 20px;
+            align-items:center; gap:12px;
+        }
+        html.light #error-banner {
+            background:#fff1f2;
+            border-color:rgba(190,18,60,0.25);
+        }
+        #error-banner.visible { display:flex; }
+        #error-icon { font-size:20px; color:#ff6e81; flex-shrink:0; }
+        html.light #error-icon { color:#be123c; }
+        #error-msg { font-size:13px; font-weight:600; color:#ff6e81; flex:1; }
+        html.light #error-msg { color:#be123c; }
+        #error-detail { font-size:11px; color:var(--text-muted); margin-top:2px; }
+        #error-retry {
+            background:rgba(255,110,129,0.15); border:1px solid rgba(255,110,129,0.35);
+            color:#ff6e81; font-size:11px; font-weight:700; padding:5px 14px;
+            border-radius:6px; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap;
+        }
+        html.light #error-retry { background:#ffe4e6; border-color:rgba(190,18,60,0.30); color:#be123c; }
+        #error-retry:hover { opacity:0.8; }
+
+        /* ── Custom match dropdown ── */
+        .hc-dropdown { position:relative; width:100%; }
+        .hc-dropdown-btn {
+            width:100%; padding:1rem 1.5rem;
+            background:var(--select-bg); border:1px solid var(--border-med);
+            border-radius:0.5rem; color:var(--text-primary);
+            font-family:'Inter',sans-serif; font-size:1rem; font-weight:500;
+            cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px;
+            text-align:left;
+        }
+        .hc-dropdown-btn:focus { outline:2px solid #8eff71; }
+        html.light .hc-dropdown-btn:focus { outline-color:#16a34a; }
+        .hc-dropdown-btn .dd-arrow {
+            font-size:18px; color:var(--text-muted); flex-shrink:0;
+            transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+        }
+        .hc-dropdown.open .dd-arrow { transform: rotate(180deg); }
+
+        .hc-dropdown-menu {
+            position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:50;
+            background:var(--select-bg); border:1px solid var(--border-med);
+            border-radius:0.5rem; overflow:hidden;
+            max-height:0; opacity:0; pointer-events:none;
+            transition: max-height 0.3s cubic-bezier(.4,0,.2,1), opacity 0.2s ease, transform 0.25s cubic-bezier(.4,0,.2,1);
+            transform: translateY(-6px);
+        }
+        .hc-dropdown.open .hc-dropdown-menu {
+            max-height:300px; opacity:1; pointer-events:auto; transform:translateY(0);
+        }
+        .hc-dropdown-item {
+            padding:12px 20px; font-size:14px; font-weight:500;
+            color:var(--text-primary); cursor:pointer;
+            display:flex; align-items:center; gap:10px;
+            border-bottom:1px solid var(--border);
+            transition: background 0.12s;
+        }
+        .hc-dropdown-item:last-child { border-bottom:none; }
+        .hc-dropdown-item:hover { background:var(--surface-strong); }
+        .hc-dropdown-item.selected { color:#8eff71; }
+        html.light .hc-dropdown-item.selected { color:#16a34a; }
+        .hc-dropdown-item .dd-check {
+            font-size:16px; margin-left:auto; opacity:0; color:#8eff71;
+            transition: opacity 0.15s;
+        }
+        html.light .hc-dropdown-item .dd-check { color:#16a34a; }
+        .hc-dropdown-item.selected .dd-check { opacity:1; }
+        .dd-badge {
+            font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px;
+            background:rgba(142,255,113,0.15); color:#8eff71; border:1px solid rgba(142,255,113,0.25);
+            text-transform:uppercase; letter-spacing:0.05em;
+        }
+        html.light .dd-badge { background:#dcfce7; color:#15803d; border-color:rgba(22,163,74,0.25); }
+
+        /* ── Poll interval select fix ── */
+        .poll-select {
+            background:var(--select-bg) !important;
+            border:1px solid var(--border-med);
+            color:var(--text-primary) !important;
+            font-size:11px; font-weight:600;
+            padding:3px 8px; border-radius:6px;
+            cursor:pointer; outline:none;
+            font-family:'Inter',sans-serif;
+        }
+        .poll-select option {
+            background:var(--select-bg);
+            color:var(--text-primary);
+        }
     </style>
 </head>
-<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
-    <header class="bg-[#0e0e0e] flex justify-between items-center px-6 py-4 w-full border-b border-white/5">
+    <header class="hc-header flex justify-between items-center px-6 py-4 w-full">
         <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-[#39FF14] text-3xl">sports_cricket</span>
             <h1 class="text-2xl font-black text-[#39FF14] tracking-tighter uppercase">HatCric</h1>
         </div>
+        <button class="theme-btn" id="theme-toggle">
+            <span class="material-symbols-outlined" style="font-size:16px;" id="theme-icon">light_mode</span>
+            <span id="theme-label">Light</span>
+        </button>
     </header>
 
+    <div id="poll-strip">
+        <div id="poll-status">
+            <div class="poll-ring-wrap">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <circle class="poll-ring-track" cx="10" cy="10" r="7"/>
+                    <circle class="poll-ring-fill" id="poll-ring" cx="10" cy="10" r="7"
+                            stroke-dasharray="43.98" stroke-dashoffset="0"/>
+                </svg>
+                <span id="poll-ring-seconds">15</span>
+            </div>
+            <span id="poll-text">Live — refreshing in 15s</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;font-weight:600;color:var(--text-muted);">Interval</span>
+            <select id="poll-interval" class="poll-select">
+                <option value="15">15s</option>
+                <option value="30">30s</option>
+                <option value="60">60s</option>
+                <option value="0">Off</option>
+            </select>
+        </div>
+    </div>
+
     <main class="flex-grow flex flex-col items-center p-6 gap-8 max-w-7xl mx-auto w-full">
-        <section class="w-full flex flex-col md:flex-row gap-4 items-end justify-between bg-white/5 p-8 rounded-lg">
+
+        <section class="w-full flex flex-col md:flex-row gap-4 items-end justify-between section-wrap p-8">
             <div class="w-full md:w-2/3">
-                <label class="block text-secondary uppercase text-xs font-bold mb-2">Select Live T20 Match</label>
-                <select id="match-selector" class="w-full bg-black border border-white/10 text-white py-4 px-6 rounded-lg outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                <label class="block hc-label hc-label-green mb-2">Select Live T20 Match</label>
+                <div class="hc-dropdown" id="match-dropdown">
+                    <button class="hc-dropdown-btn" id="match-dropdown-btn" type="button">
+                        <span id="match-dropdown-label">Mock Game Data</span>
+                        <span class="material-symbols-outlined dd-arrow">expand_more</span>
+                    </button>
+                    <div class="hc-dropdown-menu" id="match-dropdown-menu">
+                        <div class="hc-dropdown-item selected" data-value="mock_test">
+                            Mock Game Data
+                            <span class="dd-badge">Demo</span>
+                            <span class="material-symbols-outlined dd-check">check</span>
+                        </div>
+                        <div class="hc-dropdown-item" data-value="149746">
+                            GT vs DC
+                            <span class="dd-badge">Match 14</span>
+                            <span class="material-symbols-outlined dd-check">check</span>
+                        </div>
+                        <div class="hc-dropdown-item" data-value="149757">
+                            KKR vs LSG
+                            <span class="dd-badge">Match 15</span>
+                            <span class="material-symbols-outlined dd-check">check</span>
+                        </div>
+                        <div class="hc-dropdown-item" data-value="149743">
+                            RR vs MI
+                            <span class="dd-badge">Match 13</span>
+                            <span class="material-symbols-outlined dd-check">check</span>
+                        </div>
+                        <div class="hc-dropdown-item" data-value="149721">
+                            RCB vs CSK
+                            <span class="dd-badge">Match 11</span>
+                            <span class="material-symbols-outlined dd-check">check</span>
+                        </div>
+                    </div>
+                </div>
+                <select id="match-selector" style="display:none;">
                     <option value="mock_test">Mock Game Data</option>
                     <option value="149746">GT vs DC (Match 14)</option>
+                    <option value="149757">KKR vs LSG (Match 15)</option>
                     <option value="149743">RR vs MI (Match 13)</option>
                     <option value="149721">RCB vs CSK (Match 11)</option>
                 </select>
@@ -47,67 +383,90 @@
             </button>
         </section>
 
+        <div id="error-banner">
+            <span class="material-symbols-outlined" id="error-icon">wifi_off</span>
+            <div style="flex:1;">
+                <div id="error-msg">Could not reach the server</div>
+                <div id="error-detail">Last attempt failed — data shown may be stale</div>
+            </div>
+            <button id="error-retry">RETRY NOW</button>
+        </div>
+
         <section class="w-full grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
-            <div class="bg-white/5 p-6 rounded-lg flex flex-col justify-between h-48">
-                <span class="text-xs uppercase text-gray-500 font-bold">Current Score</span>
-                <div class="text-5xl font-black" id="current-score">0/0</div>
+            <div class="hc-card p-6 flex flex-col justify-between h-48" id="card-score">
+                <span class="hc-label">Current Score</span>
+                <div class="text-5xl font-black hc-value-big" id="current-score">
+                    <span class="skel-line" id="skel-score" style="display:none;height:48px;width:80%;"></span>
+                    <span id="score-val">0/0</span>
+                </div>
             </div>
-            <div class="bg-white/5 p-6 rounded-lg flex flex-col justify-between h-48">
-                <span class="text-xs uppercase text-gray-500 font-bold">Overs Bowled</span>
-                <div class="text-5xl font-bold" id="current-overs">0.0</div>
+            <div class="hc-card p-6 flex flex-col justify-between h-48" id="card-overs">
+                <span class="hc-label">Overs Bowled</span>
+                <div class="text-5xl font-bold hc-value-big" id="current-overs">
+                    <span class="skel-line" id="skel-overs" style="display:none;height:48px;width:60%;"></span>
+                    <span id="overs-val">0.0</span>
+                </div>
             </div>
-            <div class="bg-white/5 p-6 rounded-lg flex flex-col justify-between h-48">
-                <span class="text-xs uppercase text-gray-500 font-bold">Current RR</span>
-                <div class="text-5xl font-bold" id="current-crr">0.00</div>
+            <div class="hc-card p-6 flex flex-col justify-between h-48" id="card-crr">
+                <span class="hc-label">Current RR</span>
+                <div class="text-5xl font-bold hc-value-big" id="current-crr">
+                    <span class="skel-line" id="skel-crr" style="display:none;height:48px;width:65%;"></span>
+                    <span id="crr-val">0.00</span>
+                </div>
             </div>
-            <div class="bg-white/10 p-6 rounded-lg flex flex-col justify-between border border-primary/20 glow-primary h-48">
-                <span class="text-xs uppercase text-primary font-bold" id="hero-label">Predicted Score</span>
-                <div class="text-5xl font-black text-primary" id="project-score">...</div>
-                <div class="text-[10px] text-primary/60 uppercase font-bold" id="hero-subtext">System Ready</div>
+            <div class="hc-card-accent p-6 flex flex-col justify-between glow-primary h-48" id="card-hero">
+                <span class="hc-label hc-label-green" id="hero-label">Predicted Score</span>
+                <div class="text-5xl font-black text-[#8eff71]" id="project-score">
+                    <span class="skel-line" id="skel-hero" style="display:none;height:48px;width:70%;background:rgba(142,255,113,0.15);"></span>
+                    <span id="hero-val">...</span>
+                </div>
+                <div class="text-[10px] text-[#8eff71]/60 uppercase font-bold" id="hero-subtext">System Ready</div>
             </div>
         </section>
 
-        <section class="w-full bg-white/5 p-8 rounded-lg">
+        <section class="w-full section-wrap p-8">
             <div class="flex justify-between items-end mb-4">
-                <div class="flex flex-col">
-                    <span id="team-a-name" class="text-xs font-bold text-primary uppercase">TEAM A</span>
-                    <span class="text-4xl font-black" id="team-a-prob">50%</span>
+                <div class="flex flex-col gap-2">
+                    <span id="team-a-name" class="hc-label hc-label-green">TEAM A</span>
+                    <span class="skel-line" id="skel-prob-a" style="display:none;height:36px;width:70px;"></span>
+                    <span class="text-4xl font-black hc-value-big" id="team-a-prob">50%</span>
                 </div>
-                <div class="flex flex-col items-end">
-                    <span id="team-b-name" class="text-xs font-bold text-secondary uppercase">TEAM B</span>
-                    <span class="text-4xl font-black" id="team-b-prob">50%</span>
+                <div class="flex flex-col items-end gap-2">
+                    <span id="team-b-name" class="hc-label" style="color:#00fbfb;">TEAM B</span>
+                    <span class="skel-line" id="skel-prob-b" style="display:none;height:36px;width:70px;"></span>
+                    <span class="text-4xl font-black hc-value-big" id="team-b-prob">50%</span>
                 </div>
             </div>
-            <div class="h-4 w-full bg-white/5 rounded-full overflow-hidden flex">
-                <div id="bar-a" class="h-full bg-primary transition-all duration-1000" style="width: 50%"></div>
-                <div id="bar-b" class="h-full bg-secondary transition-all duration-1000" style="width: 50%"></div>
+            <div class="h-4 w-full rounded-full overflow-hidden flex hc-bar-bg">
+                <div id="bar-a" class="h-full bg-[#8eff71] transition-all duration-1000" style="width: 50%"></div>
+                <div id="bar-b" class="h-full bg-[#00fbfb] transition-all duration-1000" style="width: 50%"></div>
             </div>
         </section>
 
         <section class="w-full grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="bg-white/5 p-8 rounded-lg xl:col-span-1">
+            <div class="section-wrap p-8 xl:col-span-1" id="wickets-section">
                 <div class="flex items-center justify-between mb-5">
-                    <span class="text-xs uppercase text-gray-500 font-bold">Wickets In Hand</span>
-                    <span class="text-[10px] uppercase tracking-wide text-white/30 font-bold">Live Batting State</span>
+                    <span class="hc-label">Wickets In Hand</span>
+                    <span class="text-[10px] uppercase tracking-wide hc-text-dim2 font-bold">Live Batting State</span>
                 </div>
                 <div id="wicket-dots" class="flex flex-wrap gap-2"></div>
             </div>
 
-            <div class="bg-white/5 p-8 rounded-lg xl:col-span-2">
+            <div class="section-wrap p-8 xl:col-span-2" id="batters-section">
                 <div class="flex items-center justify-between mb-5">
-                    <span class="text-xs uppercase text-gray-500 font-bold">Batters At Crease</span>
-                    <span class="text-[10px] uppercase tracking-wide text-primary/60 font-bold">Frontend Preview</span>
+                    <span class="hc-label">Batters At Crease</span>
+                    <span class="text-[10px] uppercase tracking-wide text-[#8eff71]/60 font-bold">Frontend Preview</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm border-collapse">
                         <thead>
-                            <tr class="border-b border-white/10 text-white/35 uppercase text-[10px] tracking-wide">
-                                <th class="text-left font-medium py-2">Batter</th>
-                                <th class="text-right font-medium py-2">R</th>
-                                <th class="text-right font-medium py-2">B</th>
-                                <th class="text-right font-medium py-2">4s</th>
-                                <th class="text-right font-medium py-2">6s</th>
-                                <th class="text-right font-medium py-2">SR</th>
+                            <tr class="border-b hc-border">
+                                <th class="text-left font-medium py-2 hc-th">Batter</th>
+                                <th class="text-right font-medium py-2 hc-th">R</th>
+                                <th class="text-right font-medium py-2 hc-th">B</th>
+                                <th class="text-right font-medium py-2 hc-th">4s</th>
+                                <th class="text-right font-medium py-2 hc-th">6s</th>
+                                <th class="text-right font-medium py-2 hc-th">SR</th>
                             </tr>
                         </thead>
                         <tbody id="batters-body"></tbody>
@@ -119,148 +478,208 @@
 
 <script>
     const matchSelector = document.getElementById('match-selector');
-    const predictBtn = document.getElementById('predict-btn');
+    const predictBtn    = document.getElementById('predict-btn');
+
+    /* ── Theme toggle ── */
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon   = document.getElementById('theme-icon');
+    const themeLabel  = document.getElementById('theme-label');
+
+    const saved = localStorage.getItem('hatcric-theme')
+        || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    if (saved === 'light') applyLight();
+
+    themeToggle.addEventListener('click', () => {
+        document.documentElement.classList.contains('light') ? applyDark() : applyLight();
+    });
+
+    function applyLight() {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        themeIcon.textContent  = 'dark_mode';
+        themeLabel.textContent = 'Dark';
+        localStorage.setItem('hatcric-theme', 'light');
+    }
+    function applyDark() {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+        themeIcon.textContent  = 'light_mode';
+        themeLabel.textContent = 'Light';
+        localStorage.setItem('hatcric-theme', 'dark');
+    }
+
+    /* ── Custom match dropdown ── */
+    const ddWrap   = document.getElementById('match-dropdown');
+    const ddBtn    = document.getElementById('match-dropdown-btn');
+    const ddMenu   = document.getElementById('match-dropdown-menu');
+    const ddLabel  = document.getElementById('match-dropdown-label');
+    const ddItems  = ddMenu.querySelectorAll('.hc-dropdown-item');
+
+    ddBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        ddWrap.classList.toggle('open');
+    });
+
+    ddItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const val  = item.dataset.value;
+            const text = item.childNodes[0].textContent.trim();
+            const badge = item.querySelector('.dd-badge');
+            ddLabel.textContent = badge ? `${text} — ${badge.textContent}` : text;
+            ddItems.forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            matchSelector.value = val;
+            matchSelector.dispatchEvent(new Event('change'));
+            ddWrap.classList.remove('open');
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!ddWrap.contains(e.target)) ddWrap.classList.remove('open');
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') ddWrap.classList.remove('open');
+    });
+
+    /* ── Batter fallbacks ── */
     const batterFallbacks = {
         mock_test: [
             { name: "Jake Fraser-McGurk", runs: 41, balls: 24, fours: 5, sixes: 2 },
-            { name: "KL Rahul", runs: 36, balls: 29, fours: 3, sixes: 1 }
+            { name: "KL Rahul",           runs: 36, balls: 29, fours: 3, sixes: 1 }
         ],
         "149746": [
-            { name: "KL Rahul", runs: 52, balls: 31, fours: 6, sixes: 2 },
+            { name: "KL Rahul",       runs: 52, balls: 31, fours: 6, sixes: 2 },
             { name: "Tristan Stubbs", runs: 21, balls: 14, fours: 1, sixes: 1 }
         ],
         "149743": [
             { name: "Sanju Samson", runs: 54, balls: 33, fours: 4, sixes: 3 },
-            { name: "Riyan Parag", runs: 28, balls: 20, fours: 2, sixes: 1 }
+            { name: "Riyan Parag",  runs: 28, balls: 20, fours: 2, sixes: 1 }
         ],
         "149721": [
-            { name: "Virat Kohli", runs: 71, balls: 48, fours: 7, sixes: 2 },
+            { name: "Virat Kohli",    runs: 71, balls: 48, fours: 7, sixes: 2 },
             { name: "Glenn Maxwell", runs: 22, balls: 11, fours: 1, sixes: 2 }
         ]
     };
 
     function getBatterFallback(matchId, battingTeam, runs, wickets) {
         const seeded = batterFallbacks[matchId];
-        if (seeded) {
-            return seeded;
-        }
-
+        if (seeded) return seeded;
         const baseRuns = Math.max(12, Math.floor(runs * 0.34));
         return [
-            {
-                name: `${battingTeam || "Striker"} 1`,
-                runs: baseRuns,
-                balls: Math.max(10, Math.floor(baseRuns / 1.35)),
-                fours: Math.max(1, Math.floor(baseRuns / 14)),
-                sixes: Math.max(0, Math.floor(baseRuns / 22)),
-            },
-            {
-                name: `${battingTeam || "Striker"} 2`,
-                runs: Math.max(8, Math.floor(runs * 0.22) - wickets),
-                balls: Math.max(8, Math.floor(runs / 10)),
-                fours: Math.max(0, Math.floor(runs / 28)),
-                sixes: Math.max(0, Math.floor(runs / 40)),
-            }
+            { name: `${battingTeam || "Striker"} 1`, runs: baseRuns,                               balls: Math.max(10, Math.floor(baseRuns / 1.35)), fours: Math.max(1, Math.floor(baseRuns / 14)), sixes: Math.max(0, Math.floor(baseRuns / 22)) },
+            { name: `${battingTeam || "Striker"} 2`, runs: Math.max(8, Math.floor(runs * 0.22) - wickets), balls: Math.max(8,  Math.floor(runs / 10)),     fours: Math.max(0, Math.floor(runs / 28)),    sixes: Math.max(0, Math.floor(runs / 40)) }
         ];
     }
 
+    /* ── Wicket dots ── */
     function renderWicketDots(wickets) {
-        const wicketDots = document.getElementById('wicket-dots');
-        wicketDots.innerHTML = '';
-
+        const container = document.getElementById('wicket-dots');
+        container.innerHTML = '';
         for (let i = 0; i < 10; i++) {
             const dot = document.createElement('div');
             const isOut = i < wickets;
-            dot.className = `w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${
-                isOut
-                    ? 'bg-tertiary/20 text-tertiary border border-tertiary/40'
-                    : 'bg-white/5 text-white/35 border border-white/10'
-            }`;
+            dot.className = `w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black`;
+            const isLight = document.documentElement.classList.contains('light');
+            dot.style.cssText = isOut
+                ? (isLight
+                    ? 'background:#fee2e2;color:#be123c;border:1px solid rgba(190,18,60,0.30);'
+                    : 'background:rgba(255,110,129,0.20);color:#ff6e81;border:1px solid rgba(255,110,129,0.40);')
+                : 'background:var(--surface);color:var(--text-dim);border:1px solid var(--border-med);';
             dot.textContent = isOut ? 'W' : String(i + 1);
-            wicketDots.appendChild(dot);
+            container.appendChild(dot);
         }
     }
 
+    /* ── Batters table ── */
     function renderBattersTable(batters) {
-        const battersBody = document.getElementById('batters-body');
-        battersBody.innerHTML = '';
-
+        const body = document.getElementById('batters-body');
+        body.innerHTML = '';
         batters.slice(0, 2).forEach((batter, index) => {
             const sr = batter.balls > 0 ? ((batter.runs / batter.balls) * 100) : 0;
-            const badgeClass = sr >= 150
-                ? 'bg-primary/20 text-primary border border-primary/30'
-                : sr >= 110
-                    ? 'bg-secondary/15 text-secondary border border-secondary/25'
-                    : 'bg-tertiary/15 text-tertiary border border-tertiary/25';
-
+            const isLight = document.documentElement.classList.contains('light');
+            let badgeBg, badgeColor, badgeBorder;
+            if (sr >= 150) {
+                badgeBg     = isLight ? '#dcfce7' : 'rgba(142,255,113,0.15)';
+                badgeColor  = isLight ? '#15803d' : '#8eff71';
+                badgeBorder = isLight ? 'rgba(22,163,74,0.30)' : 'rgba(142,255,113,0.30)';
+            } else if (sr >= 110) {
+                badgeBg     = isLight ? '#cffafe' : 'rgba(0,251,251,0.12)';
+                badgeColor  = isLight ? '#164e63' : '#00fbfb';
+                badgeBorder = isLight ? 'rgba(22,78,99,0.35)'  : 'rgba(0,251,251,0.25)';
+            } else {
+                badgeBg     = isLight ? '#ffe4e6' : 'rgba(255,110,129,0.12)';
+                badgeColor  = isLight ? '#be123c' : '#ff6e81';
+                badgeBorder = isLight ? 'rgba(190,18,60,0.25)' : 'rgba(255,110,129,0.25)';
+            }
             const row = document.createElement('tr');
-            row.className = 'border-b border-white/5';
+            row.style.borderBottom = '1px solid var(--border)';
             row.innerHTML = `
-                <td class="py-3 pr-2 text-white/80 font-medium">${batter.name}${index === 0 ? ' <span class="text-primary">*</span>' : ''}</td>
-                <td class="py-3 text-right font-bold">${batter.runs}</td>
-                <td class="py-3 text-right font-bold">${batter.balls}</td>
-                <td class="py-3 text-right font-bold">${batter.fours}</td>
-                <td class="py-3 text-right font-bold">${batter.sixes}</td>
+                <td class="py-3 pr-2 hc-td-muted font-medium">${batter.name}${index === 0 ? ` <span style="color:${document.documentElement.classList.contains('light') ? '#16a34a' : '#8eff71'}">*</span>` : ''}</td>
+                <td class="py-3 text-right font-bold hc-td">${batter.runs}</td>
+                <td class="py-3 text-right font-bold hc-td">${batter.balls}</td>
+                <td class="py-3 text-right font-bold hc-td">${batter.fours}</td>
+                <td class="py-3 text-right font-bold hc-td">${batter.sixes}</td>
                 <td class="py-3 text-right">
-                    <span class="inline-flex items-center rounded-md px-2 py-1 text-[11px] font-bold ${badgeClass}">
+                    <span style="display:inline-flex;align-items:center;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeBorder};">
                         ${sr.toFixed(1)}
                     </span>
-                </td>
-            `;
-            battersBody.appendChild(row);
+                </td>`;
+            body.appendChild(row);
         });
     }
 
+    /* ── Main fetch ── */
     async function fetchMatchData() {
         predictBtn.innerText = "FETCHING...";
         try {
             const response = await fetch(`http://127.0.0.1:5000/api/match/${matchSelector.value}`);
-            
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
             const data = await response.json();
             if (data.error) throw new Error(data.error);
 
-            const runs = data.current_score || 0;
-            const overs = data.overs_bowled || 0;
-            const innings = data.innings || 1;
-            const target = data.target || 0;
+            const runs           = data.current_score || 0;
+            const overs          = data.overs_bowled  || 0;
+            const innings        = data.innings        || 1;
+            const target         = data.target         || 0;
             const predictedScore = data.predicted_score || 0;
             const predictionNote = data.prediction_note || "";
-            const battingTeam = data.batting_team || null;
-            const batters = Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
+            const battingTeam    = data.batting_team   || null;
+            const { teamA, teamB } = resolveTeamNames(data);
+            const shouldShowBatting = data.state !== 'Preview';
+            const batters        = shouldShowBatting && Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
                 ? data.batters_at_crease
-                : getBatterFallback(matchSelector.value, battingTeam || data.team_a, runs, data.wickets || 0);
-            
+                : shouldShowBatting
+                    ? getBatterFallback(matchSelector.value, battingTeam || teamA, runs, data.wickets || 0)
+                    : [];
+
             const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
-            let crr = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
+            const crr       = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : "0.00";
 
-            document.getElementById('current-score').innerHTML = `${runs}<span class="text-tertiary">/${data.wickets}</span>`;
+            document.getElementById('current-score').innerHTML = `${runs}<span style="color:#ff6e81">/${data.wickets}</span>`;
             document.getElementById('current-overs').innerText = overs;
-            document.getElementById('current-crr').innerText = crr;
+            document.getElementById('current-crr').innerText   = crr;
 
-            const heroVal = document.getElementById('project-score');
+            const heroVal   = document.getElementById('project-score');
             const heroLabel = document.getElementById('hero-label');
-            const heroSub = document.getElementById('hero-subtext');
+            const heroSub   = document.getElementById('hero-subtext');
 
             if (data.is_complete) {
                 heroLabel.innerText = "MATCH FINISHED";
-                heroVal.innerText = "END";
-                heroSub.innerText = data.status; 
+                heroVal.innerText   = "END";
+                heroSub.innerText   = data.status;
             } else if (data.state === "Preview") {
                 heroLabel.innerText = "UPCOMING MATCH";
-                heroVal.innerText = "PRE";
-                heroSub.innerText = data.status;
+                heroVal.innerText   = "PRE";
+                heroSub.innerText   = data.status;
             } else if (innings === 2) {
                 heroLabel.innerText = "TARGET CHASE";
-                heroVal.innerText = predictedScore || target;
-                heroSub.innerText = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
+                heroVal.innerText   = predictedScore || target;
+                heroSub.innerText   = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
             } else {
                 heroLabel.innerText = "PROJECTED SCORE";
-                heroVal.innerText = predictedScore || Math.floor(crr * 20);
-                heroSub.innerText = predictionNote || "First Innings Live";
+                heroVal.innerText   = predictedScore || Math.floor(crr * 20);
+                heroSub.innerText   = predictionNote || "First Innings Live";
             }
 
             const isLive = !data.is_complete && data.state !== "Preview";
@@ -269,10 +688,11 @@
 
             const pA = data.win_probability.team_a;
             const pB = data.win_probability.team_b;
-            document.getElementById('team-a-prob').innerText = pA + "%";
-            document.getElementById('team-b-prob').innerText = pB + "%";
-            document.getElementById('bar-a').style.width = pA + "%";
-            document.getElementById('bar-b').style.width = pB + "%";
+            document.getElementById('team-a-prob').innerText      = pA + "%";
+            document.getElementById('team-b-prob').innerText      = pB + "%";
+            document.getElementById('bar-a').style.width          = pA + "%";
+            document.getElementById('bar-b').style.width          = pB + "%";
+
             renderWicketDots(data.wickets || 0);
             renderBattersTable(batters);
 
@@ -289,11 +709,294 @@
         }
     }
 
-    predictBtn.addEventListener('click', fetchMatchData);
-    matchSelector.addEventListener('change', fetchMatchData);
-    
-    fetchMatchData();
+    /* ── Polling ── */
+    const CIRCUMFERENCE = 43.98; // 2π × r=7
+    const POLL_DEFAULT  = 15;
+    let pollInterval    = POLL_DEFAULT;
+    let pollTimer       = null;
+    let countdownTimer  = null;
+    let secondsLeft     = POLL_DEFAULT;
 
-    </script>
+    const pollRing        = document.getElementById('poll-ring');
+    const pollRingSeconds = document.getElementById('poll-ring-seconds');
+    const pollText        = document.getElementById('poll-text');
+    const pollSelect      = document.getElementById('poll-interval');
+    const wicketsSection  = document.getElementById('wickets-section');
+    const battersSection  = document.getElementById('batters-section');
+
+    const matchTeams = {
+        mock_test: { team_a: 'TEAM A', team_b: 'TEAM B' },
+        '149746': { team_a: 'GT', team_b: 'DC' },
+        '149743': { team_a: 'RR', team_b: 'MI' },
+        '149721': { team_a: 'RCB', team_b: 'CSK' },
+        '149757': { team_a: 'KKR', team_b: 'LSG' }
+    };
+
+    function toggleBattingSections(show) {
+        wicketsSection.style.display = show ? '' : 'none';
+        battersSection.style.display = show ? '' : 'none';
+    }
+
+    function resolveTeamNames(data) {
+        const fallback = matchTeams[matchSelector.value] || matchTeams.mock_test;
+        const teamA = data.team_a && data.team_a !== 'TEAM A' ? data.team_a : fallback.team_a;
+        const teamB = data.team_b && data.team_b !== 'TEAM B' ? data.team_b : fallback.team_b;
+        return { teamA, teamB };
+    }
+
+    function setRing(state) {
+        pollRing.className = 'poll-ring-fill ' + state;
+        if (state === 'fetching') {
+            pollRingSeconds.textContent = '…';
+            pollText.textContent = 'Fetching latest data…';
+            pollRing.style.strokeDashoffset = '0';
+        } else if (state === 'error') {
+            pollRingSeconds.textContent = '!';
+            pollText.textContent = 'Fetch failed — retrying next interval';
+            pollRing.style.strokeDashoffset = '0';
+        } else if (state === 'off') {
+            pollRingSeconds.textContent = '—';
+            pollText.textContent = 'Auto-refresh off';
+            pollRing.style.strokeDashoffset = String(CIRCUMFERENCE);
+        } else {
+            pollRingSeconds.textContent = secondsLeft;
+            pollText.textContent = `Live — refreshing in ${secondsLeft}s`;
+        }
+    }
+
+    function startCountdown() {
+        clearInterval(countdownTimer);
+        if (pollInterval === 0) { setRing('off'); return; }
+        secondsLeft = pollInterval;
+
+        /* snap ring to full immediately (no transition), then let CSS transition drain it */
+        pollRing.style.transition = 'none';
+        pollRing.style.strokeDashoffset = '0';
+        setRing('');
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            pollRing.style.transition = `stroke-dashoffset ${pollInterval}s linear`;
+            pollRing.style.strokeDashoffset = String(CIRCUMFERENCE);
+        }));
+
+        countdownTimer = setInterval(() => {
+            secondsLeft = Math.max(0, secondsLeft - 1);
+            setRing('');
+            if (secondsLeft <= 0) clearInterval(countdownTimer);
+        }, 1000);
+    }
+
+    function schedulePoll() {
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        if (pollInterval === 0) { setRing('off'); return; }
+        startCountdown();
+        pollTimer = setTimeout(async () => {
+            await fetchMatchData();
+            schedulePoll();
+        }, pollInterval * 1000);
+    }
+
+    pollSelect.addEventListener('change', () => {
+        pollInterval = parseInt(pollSelect.value);
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        schedulePoll();
+    });
+
+    /* ── Predict button ── */
+    predictBtn.addEventListener('click', async () => {
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        await fetchMatchData();
+        schedulePoll();
+    });
+
+    /* ── Match selector ── */
+    matchSelector.addEventListener('change', async () => {
+        clearTimeout(pollTimer);
+        clearInterval(countdownTimer);
+        await fetchMatchData();
+        schedulePoll();
+    });
+
+    /* ── Skeleton helpers ── */
+    let isFirstLoad = true;
+
+    function showSkeleton() {
+        if (!isFirstLoad) return;
+        const skels = ['skel-score','skel-overs','skel-crr','skel-hero','skel-prob-a','skel-prob-b'];
+        const vals  = ['score-val','overs-val','crr-val','hero-val'];
+        skels.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
+        vals.forEach(id  => { const el = document.getElementById(id);  if (el) el.style.display = 'none';  });
+        document.getElementById('hero-subtext').style.opacity = '0';
+        const battersBody = document.getElementById('batters-body');
+        battersBody.innerHTML = `
+            <tr><td colspan="6" style="padding:16px 0;">
+                <span class="skel-line" style="display:block;height:18px;width:55%;margin-bottom:10px;"></span>
+                <span class="skel-line" style="display:block;height:18px;width:45%;"></span>
+            </td></tr>`;
+        const wicketDots = document.getElementById('wicket-dots');
+        wicketDots.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const d = document.createElement('span');
+            d.className = 'skel-line';
+            d.style.cssText = 'display:inline-block;width:32px;height:32px;border-radius:50%;';
+            wicketDots.appendChild(d);
+        }
+    }
+
+    function hideSkeleton() {
+        const skels = ['skel-score','skel-overs','skel-crr','skel-hero','skel-prob-a','skel-prob-b'];
+        const vals  = ['score-val','overs-val','crr-val','hero-val'];
+        skels.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none';  });
+        vals.forEach(id  => { const el = document.getElementById(id);  if (el) el.style.display = '';     });
+        document.getElementById('hero-subtext').style.opacity = '';
+        isFirstLoad = false;
+    }
+
+    /* ── Error banner helpers ── */
+    const errorBanner = document.getElementById('error-banner');
+    const errorMsg    = document.getElementById('error-msg');
+    const errorDetail = document.getElementById('error-detail');
+    document.getElementById('error-retry').addEventListener('click', async () => {
+        clearTimeout(pollTimer); clearInterval(countdownTimer);
+        await fetchMatchData();
+        schedulePoll();
+    });
+
+    function showError(msg, detail) {
+        errorMsg.textContent    = msg    || 'Could not reach the server';
+        errorDetail.textContent = detail || 'Last attempt failed — data shown may be stale';
+        errorBanner.classList.add('visible');
+    }
+    function hideError() { errorBanner.classList.remove('visible'); }
+
+    /* ── Override fetchMatchData to update ring state ── */
+    const _origFetch = fetchMatchData;
+    function detectCompletedWinner(data) {
+    const status = (data.status || "").toLowerCase();
+    const teamA = (data.team_a || "").toLowerCase();
+    const teamB = (data.team_b || "").toLowerCase();
+
+    if (!(status.includes("won") || status.includes("beat"))) {
+        return null;
+    }
+
+    if (teamA && status.includes(teamA)) return "team_a";
+    if (teamB && status.includes(teamB)) return "team_b";
+    return null;
+}
+
+    fetchMatchData = async function() {
+        setRing('fetching');
+        predictBtn.innerText = 'FETCHING...';
+        showSkeleton();
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/match/${matchSelector.value}`);
+            if (!response.ok) throw new Error(`Server responded ${response.status}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            hideError();
+            hideSkeleton();
+
+            const runs           = data.current_score || 0;
+            const overs          = data.overs_bowled  || 0;
+            const innings        = data.innings        || 1;
+            const target         = data.target         || 0;
+            const predictedScore = data.predicted_score || 0;
+            const predictionNote = data.prediction_note || '';
+            const battingTeam    = data.batting_team   || null;
+            const { teamA, teamB } = resolveTeamNames(data);
+            const shouldShowBatting = data.state !== 'Preview';
+            const batters        = shouldShowBatting && Array.isArray(data.batters_at_crease) && data.batters_at_crease.length > 0
+                ? data.batters_at_crease
+                : shouldShowBatting
+                    ? getBatterFallback(matchSelector.value, battingTeam || teamA, runs, data.wickets || 0)
+                    : [];
+
+            const trueOvers = Math.floor(overs) + ((overs % 1) * 10 / 6);
+            const crr       = trueOvers > 0 ? (runs / trueOvers).toFixed(2) : '0.00';
+
+            document.getElementById('score-val').innerHTML = `${runs}<span style="color:#ff6e81">/${data.wickets}</span>`;
+            document.getElementById('overs-val').innerText = overs;
+            document.getElementById('crr-val').innerText   = crr;
+
+            const heroVal   = document.getElementById('hero-val');
+            const heroLabel = document.getElementById('hero-label');
+            const heroSub   = document.getElementById('hero-subtext');
+
+            if (data.is_complete) {
+                heroLabel.innerText = 'MATCH FINISHED'; heroVal.innerText = 'END'; heroSub.innerText = data.status;
+            } else if (data.state === 'Preview') {
+                heroLabel.innerText = 'UPCOMING MATCH'; heroVal.innerText = 'PRE'; heroSub.innerText = data.status;
+            } else if (innings === 2) {
+                heroLabel.innerText = 'TARGET CHASE';
+                heroVal.innerText   = predictedScore || target;
+                heroSub.innerText   = predictionNote || `${Math.max(0, target - runs)} Runs Needed`;
+            } else {
+                heroLabel.innerText = 'PROJECTED SCORE';
+                heroVal.innerText   = predictedScore || Math.floor(crr * 20);
+                heroSub.innerText   = predictionNote || 'First Innings Live';
+            }
+
+            const isLive = !data.is_complete && data.state !== 'Preview';
+            document.getElementById('team-a-name').innerText = teamA + (isLive && battingTeam === teamA ? ' (BATTING)' : '');
+            document.getElementById('team-b-name').innerText = teamB + (isLive && battingTeam === teamB ? ' (BATTING)' : '');
+
+            let probability = data.win_probability || { team_a: 50, team_b: 50 };
+
+            if (data.is_complete) {
+                const winner = detectCompletedWinner(data);
+                if (winner === "team_a") {
+                    probability = { team_a: 100, team_b: 0 };
+                } else if (winner === "team_b") {
+                    probability = { team_a: 0, team_b: 100 };
+                }
+            }
+
+            const pA = probability.team_a ?? 50;
+            const pB = probability.team_b ?? 50;
+
+            document.getElementById('team-a-prob').innerText = pA + '%';
+            document.getElementById('team-b-prob').innerText = pB + '%';
+            document.getElementById('bar-a').style.width = pA + '%';
+            document.getElementById('bar-b').style.width = pB + '%';
+
+            toggleBattingSections(shouldShowBatting);
+            if (shouldShowBatting) {
+                renderWicketDots(data.wickets || 0);
+                renderBattersTable(batters);
+            }
+
+            heroVal.parentElement.classList.add('scale-105');
+            setTimeout(() => heroVal.parentElement.classList.remove('scale-105'), 200);
+
+            setRing('');
+        } catch (error) {
+            console.error('Fetch error:', error);
+            hideSkeleton();
+            const isNet = error instanceof TypeError;
+            showError(
+                isNet ? 'Cannot connect to server' : `Error: ${error.message}`,
+                isNet ? 'Make sure your Flask backend is running on port 5000' : 'Check the console for details'
+            );
+            if (isFirstLoad) {
+                document.getElementById('hero-val').innerText = '—';
+                toggleBattingSections(true);
+                renderWicketDots(0);
+                renderBattersTable(getBatterFallback(matchSelector.value, 'Batter', 0, 0));
+            }
+            setRing('error');
+        } finally {
+            predictBtn.innerText = 'MANUAL REFRESH';
+        }
+    };
+
+    /* ── Boot ── */
+    showSkeleton();
+    fetchMatchData().then(() => schedulePoll());
+</script>
 </body>
 </html>

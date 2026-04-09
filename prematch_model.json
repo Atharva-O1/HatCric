@@ -1,0 +1,483 @@
+{
+  "model_type": "contextual_logistic_regression",
+  "trained_on_matches": 1159,
+  "training_accuracy": 0.566,
+  "weighted_log_loss": 0.7401,
+  "prediction_floor": 18,
+  "prediction_ceiling": 82,
+  "weights": {
+    "bias": 0.20189126,
+    "team:RCB": 0.07377883,
+    "team:KKR": 0.10305844,
+    "home_advantage": 0.09773273,
+    "toss_sign": 0.0464843,
+    "toss_decision_sign": -0.16844969,
+    "rating_diff": -0.20581674,
+    "rating_ratio": -0.01932772,
+    "form_diff": 0.07587953,
+    "head_to_head_diff": -0.15459844,
+    "experience_diff": -0.77387701,
+    "team:PBKS": -0.16366822,
+    "team:CSK": 0.32434521,
+    "team:DC": -0.1105307,
+    "team:RR": 0.04652807,
+    "team:MI": 0.25381086,
+    "team:DEC": -0.59006584,
+    "team:KTK": -0.4961252,
+    "team:PWI": -1.24802379,
+    "team:SRH": -0.09348296,
+    "team:RPS": -0.09378564,
+    "team:GL": -0.26103548,
+    "team:LSG": 0.26010587,
+    "team:GT": 0.59215571
+  },
+  "team_ratings": {
+    "RCB": 1614.868,
+    "KKR": 1506.233,
+    "PBKS": 1548.568,
+    "CSK": 1445.34,
+    "DC": 1527.797,
+    "RR": 1521.439,
+    "MI": 1506.898,
+    "DEC": 1434.217,
+    "KTK": 1484.091,
+    "PWI": 1379.165,
+    "SRH": 1492.342,
+    "RPS": 1529.596,
+    "GL": 1470.118,
+    "LSG": 1504.372,
+    "GT": 1534.955
+  },
+  "recent_form": {
+    "RCB": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "KKR": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "PBKS": [
+      0,
+      1,
+      0,
+      1,
+      1
+    ],
+    "CSK": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "DC": [
+      0,
+      1,
+      1,
+      1,
+      0
+    ],
+    "RR": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "MI": [
+      1,
+      0,
+      1,
+      0,
+      0
+    ],
+    "DEC": [
+      0,
+      0,
+      0,
+      1,
+      1
+    ],
+    "KTK": [
+      1,
+      0,
+      0,
+      1,
+      0
+    ],
+    "PWI": [
+      0,
+      0,
+      0,
+      1,
+      1
+    ],
+    "SRH": [
+      1,
+      1,
+      0,
+      1,
+      0
+    ],
+    "RPS": [
+      1,
+      0,
+      1,
+      1,
+      0
+    ],
+    "GL": [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "LSG": [
+      0,
+      1,
+      0,
+      0,
+      1
+    ],
+    "GT": [
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "head_to_head": {
+    "KKR|RCB": {
+      "KKR": 20,
+      "RCB": 15
+    },
+    "CSK|PBKS": {
+      "CSK": 16,
+      "PBKS": 16
+    },
+    "DC|RR": {
+      "DC": 14,
+      "RR": 15
+    },
+    "MI|RCB": {
+      "RCB": 14,
+      "MI": 19
+    },
+    "DEC|KKR": {
+      "KKR": 7,
+      "DEC": 2
+    },
+    "PBKS|RR": {
+      "RR": 17,
+      "PBKS": 12
+    },
+    "DC|DEC": {
+      "DC": 7,
+      "DEC": 4
+    },
+    "CSK|MI": {
+      "CSK": 18,
+      "MI": 21
+    },
+    "DEC|RR": {
+      "RR": 7,
+      "DEC": 2
+    },
+    "MI|PBKS": {
+      "PBKS": 16,
+      "MI": 17
+    },
+    "RCB|RR": {
+      "RR": 14,
+      "RCB": 17
+    },
+    "CSK|KKR": {
+      "CSK": 20,
+      "KKR": 11
+    },
+    "DEC|MI": {
+      "DEC": 4,
+      "MI": 6
+    },
+    "DC|PBKS": {
+      "PBKS": 17,
+      "DC": 16
+    },
+    "CSK|RCB": {
+      "CSK": 21,
+      "RCB": 14
+    },
+    "KKR|MI": {
+      "MI": 25,
+      "KKR": 11
+    },
+    "DC|RCB": {
+      "DC": 12,
+      "RCB": 19
+    },
+    "DEC|PBKS": {
+      "PBKS": 7,
+      "DEC": 3
+    },
+    "KKR|RR": {
+      "RR": 12,
+      "KKR": 16
+    },
+    "CSK|DC": {
+      "DC": 12,
+      "CSK": 19
+    },
+    "KKR|PBKS": {
+      "PBKS": 13,
+      "KKR": 21
+    },
+    "DEC|RCB": {
+      "RCB": 5,
+      "DEC": 6
+    },
+    "DC|MI": {
+      "MI": 21,
+      "DC": 17
+    },
+    "CSK|RR": {
+      "RR": 16,
+      "CSK": 16
+    },
+    "PBKS|RCB": {
+      "PBKS": 18,
+      "RCB": 19
+    },
+    "CSK|DEC": {
+      "DEC": 4,
+      "CSK": 6
+    },
+    "MI|RR": {
+      "MI": 16,
+      "RR": 15
+    },
+    "DC|KKR": {
+      "KKR": 19,
+      "DC": 14
+    },
+    "KTK|RCB": {
+      "RCB": 2
+    },
+    "PBKS|PWI": {
+      "PWI": 3,
+      "PBKS": 3
+    },
+    "KTK|PWI": {
+      "PWI": 1
+    },
+    "KTK|MI": {
+      "KTK": 1
+    },
+    "DC|PWI": {
+      "DC": 3,
+      "PWI": 2
+    },
+    "CSK|KTK": {
+      "KTK": 1,
+      "CSK": 1
+    },
+    "MI|PWI": {
+      "MI": 5,
+      "PWI": 1
+    },
+    "KKR|KTK": {
+      "KTK": 2
+    },
+    "KTK|RR": {
+      "RR": 1,
+      "KTK": 1
+    },
+    "CSK|PWI": {
+      "CSK": 4,
+      "PWI": 2
+    },
+    "DEC|KTK": {
+      "DEC": 1
+    },
+    "PWI|RCB": {
+      "RCB": 5
+    },
+    "DC|KTK": {
+      "DC": 1,
+      "KTK": 1
+    },
+    "PWI|RR": {
+      "RR": 4,
+      "PWI": 1
+    },
+    "DEC|PWI": {
+      "PWI": 1,
+      "DEC": 3
+    },
+    "KTK|PBKS": {
+      "PBKS": 1
+    },
+    "KKR|PWI": {
+      "KKR": 4,
+      "PWI": 1
+    },
+    "PWI|SRH": {
+      "SRH": 2
+    },
+    "RCB|SRH": {
+      "RCB": 12,
+      "SRH": 13
+    },
+    "DC|SRH": {
+      "SRH": 13,
+      "DC": 11
+    },
+    "KKR|SRH": {
+      "KKR": 19,
+      "SRH": 11
+    },
+    "PBKS|SRH": {
+      "SRH": 17,
+      "PBKS": 7
+    },
+    "CSK|SRH": {
+      "CSK": 15,
+      "SRH": 7
+    },
+    "RR|SRH": {
+      "RR": 9,
+      "SRH": 12
+    },
+    "MI|SRH": {
+      "SRH": 10,
+      "MI": 14
+    },
+    "MI|RPS": {
+      "RPS": 4,
+      "MI": 2
+    },
+    "GL|PBKS": {
+      "GL": 2,
+      "PBKS": 2
+    },
+    "GL|RPS": {
+      "GL": 3,
+      "RPS": 1
+    },
+    "GL|MI": {
+      "GL": 2,
+      "MI": 1
+    },
+    "PBKS|RPS": {
+      "PBKS": 2,
+      "RPS": 2
+    },
+    "GL|SRH": {
+      "SRH": 5
+    },
+    "RCB|RPS": {
+      "RCB": 2,
+      "RPS": 2
+    },
+    "GL|RCB": {
+      "GL": 2,
+      "RCB": 3
+    },
+    "KKR|RPS": {
+      "KKR": 3,
+      "RPS": 1
+    },
+    "RPS|SRH": {
+      "RPS": 3,
+      "SRH": 1
+    },
+    "DC|GL": {
+      "GL": 1,
+      "DC": 3
+    },
+    "DC|RPS": {
+      "RPS": 2,
+      "DC": 2
+    },
+    "GL|KKR": {
+      "GL": 3,
+      "KKR": 1
+    },
+    "GT|LSG": {
+      "GT": 4,
+      "LSG": 3
+    },
+    "CSK|LSG": {
+      "LSG": 3,
+      "CSK": 2
+    },
+    "DC|GT": {
+      "GT": 5,
+      "DC": 3
+    },
+    "LSG|SRH": {
+      "LSG": 5,
+      "SRH": 2
+    },
+    "DC|LSG": {
+      "LSG": 3,
+      "DC": 5
+    },
+    "GT|PBKS": {
+      "GT": 3,
+      "PBKS": 4
+    },
+    "LSG|RR": {
+      "RR": 4,
+      "LSG": 2
+    },
+    "GT|SRH": {
+      "SRH": 1,
+      "GT": 5
+    },
+    "GT|RR": {
+      "GT": 6,
+      "RR": 3
+    },
+    "LSG|MI": {
+      "LSG": 6,
+      "MI": 2
+    },
+    "CSK|GT": {
+      "GT": 4,
+      "CSK": 4
+    },
+    "LSG|RCB": {
+      "RCB": 4,
+      "LSG": 2
+    },
+    "GT|KKR": {
+      "GT": 3,
+      "KKR": 1
+    },
+    "LSG|PBKS": {
+      "LSG": 3,
+      "PBKS": 3
+    },
+    "GT|RCB": {
+      "GT": 3,
+      "RCB": 3
+    },
+    "GT|MI": {
+      "MI": 3,
+      "GT": 5
+    },
+    "KKR|LSG": {
+      "LSG": 4,
+      "KKR": 2
+    }
+  }
+}

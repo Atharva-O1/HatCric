@@ -5,11 +5,13 @@ HatCric Backend Proxy
 
 import time
 import logging
+import re
 from flask import Flask, jsonify, abort
 from flask_cors import CORS
 import requests
 from dotenv import load_dotenv
 import os
+from prematch_model import predict_match_probability
 
 load_dotenv()
 
@@ -39,6 +41,7 @@ CACHE_TTL_SECONDS = 15
 REQUEST_TIMEOUT = 8
 _cache: dict[str, dict] = {}
 LIVE_MATCHES_CACHE_KEY = "__live_matches__"
+MATCH_LIST_CACHE_KEY = "__match_lists__"
 
 
 def overs_to_balls(overs) -> int:
@@ -55,16 +58,29 @@ def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
 
-def detect_winner(status: str, team_a: str, team_b: str) -> str | None:
+def _alias_in_status(alias: str, status_l: str) -> bool:
+    alias = (alias or "").strip().lower()
+    if not alias:
+        return False
+    if len(alias) <= 4 and alias.replace(" ", "").isalpha():
+        return re.search(rf"\b{re.escape(alias)}\b", status_l) is not None
+    return alias in status_l
+
+
+def detect_winner(
+    status: str,
+    team_a: str,
+    team_b: str,
+    team_a_full: str = "",
+    team_b_full: str = "",
+) -> str | None:
     status_l = (status or "").lower()
-    if "won" not in status_l:
+    if "won" not in status_l and "beat" not in status_l:
         return None
 
-    team_a_l = (team_a or "").lower()
-    team_b_l = (team_b or "").lower()
-    if team_a_l and team_a_l in status_l:
+    if _alias_in_status(team_a, status_l) or _alias_in_status(team_a_full, status_l):
         return "team_a"
-    if team_b_l and team_b_l in status_l:
+    if _alias_in_status(team_b, status_l) or _alias_in_status(team_b_full, status_l):
         return "team_b"
     return None
 
@@ -186,25 +202,34 @@ def get_api_headers() -> dict:
 
 
 def fetch_live_matches() -> list[dict]:
-    cached = get_cached(LIVE_MATCHES_CACHE_KEY)
+    cached = get_cached(MATCH_LIST_CACHE_KEY)
     if cached is not None:
         return cached
 
-    url = "https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live"
-    response = requests.get(url, headers=get_api_headers(), timeout=REQUEST_TIMEOUT)
-    response.raise_for_status()
-    raw = response.json()
-
     matches = []
-    for wrapper in raw.get("seriesMatches", []):
-        adapter = wrapper.get("seriesAdWrapper", {})
-        for match in adapter.get("matches", []):
-            info = match.get("matchInfo", {}) or {}
-            if info:
-                matches.append(info)
+    for path in ("live", "recent", "upcoming"):
+        url = f"https://cricbuzz-cricket.p.rapidapi.com/matches/v1/{path}"
+        response = requests.get(url, headers=get_api_headers(), timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+        raw = response.json()
 
-    set_cached(LIVE_MATCHES_CACHE_KEY, matches)
-    return matches
+        for type_match in raw.get("typeMatches", []):
+            for wrapper in type_match.get("seriesMatches", []):
+                adapter = wrapper.get("seriesAdWrapper", {})
+                for match in adapter.get("matches", []):
+                    info = match.get("matchInfo", {}) or {}
+                    if info:
+                        matches.append(info)
+
+    deduped = {}
+    for info in matches:
+        if info.get("matchId") is not None:
+            deduped[str(info["matchId"])] = info
+
+    final_matches = list(deduped.values())
+    set_cached(MATCH_LIST_CACHE_KEY, final_matches)
+    set_cached(LIVE_MATCHES_CACHE_KEY, final_matches)
+    return final_matches
 
 
 def get_match_info_from_live(match_id: str) -> dict:
@@ -232,6 +257,9 @@ def parse_score_response(data, match_id: str | None = None):
         team2_info = match_info.get("team2", {})
         team1 = team1_info.get("shortName") or team1_info.get("teamSName") or "TEAM A"
         team2 = team2_info.get("shortName") or team2_info.get("teamSName") or "TEAM B"
+        team1_full = team1_info.get("teamName") or team1
+        team2_full = team2_info.get("teamName") or team2
+        venue_info = match_info.get("venueInfo", {})
 
         res = {
             "innings": 1, "target": 0, "current_score": 0, "wickets": 0, "overs_bowled": 0.0,
@@ -336,6 +364,17 @@ def parse_score_response(data, match_id: str | None = None):
         overs_bowled = float(res["overs_bowled"] or 0)
         res["wickets_in_hand"] = max(0, 10 - wickets)
 
+        if res["state"] == "Preview":
+            res["win_probability"] = predict_match_probability(
+                res["team_a"],
+                res["team_b"],
+                venue_info,
+                status=status,
+                team_a_full=team1_full,
+                team_b_full=team2_full,
+            )
+            res["prediction_note"] = "ML pre-match model based on historical IPL results"
+
         if not res["is_complete"] and res["state"] != "Preview":
             if res["innings"] == 2 and res["target"] > 0:
                 chasing_win = chase_win_probability(runs, wickets, overs_bowled, int(res["target"]))
@@ -360,7 +399,7 @@ def parse_score_response(data, match_id: str | None = None):
 
         # 4. WIN PROBABILITY MATH FOR COMPLETED MATCHES
         if is_complete:
-            winner = detect_winner(status, res["team_a"], res["team_b"])
+            winner = detect_winner(status, res["team_a"], res["team_b"], team1_full, team2_full)
             if winner == "team_a":
                 res["win_probability"] = {"team_a": 100, "team_b": 0}
             elif winner == "team_b":
