@@ -145,6 +145,45 @@ def first_innings_win_probability(projected_total: int, overs_bowled: float, wic
     return round(clamp(50 + advantage * 0.6, 10, 90))
 
 
+def build_prediction_explanation(
+    *,
+    state: str,
+    is_complete: bool,
+    team_a: str,
+    team_b: str,
+    team_a_pct: int,
+    team_b_pct: int,
+    status: str,
+    batting_team: str | None = None,
+    innings: int = 1,
+    target: int = 0,
+    runs: int = 0,
+    wickets: int = 0,
+    overs_bowled: float = 0.0,
+    predicted_score: int = 0,
+    used_lineups: bool = False,
+) -> str:
+    favored_team = team_a if team_a_pct >= team_b_pct else team_b
+
+    if is_complete:
+        return status or f"{favored_team} finished on top."
+
+    if state == "Preview":
+        if used_lineups:
+            return f"HatCric favors {favored_team} from the announced XI balance, venue context, and recent team strength."
+        return f"HatCric favors {favored_team} from recent form, venue fit, and historical team strength."
+
+    balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
+    if innings == 2 and target > 0:
+        runs_needed = max(0, target - runs)
+        req_rr = (runs_needed / (balls_remaining / 6)) if balls_remaining > 0 else 0.0
+        return f"HatCric leans {favored_team} based on the chase pressure, wickets in hand, and required rate at {req_rr:.2f}."
+
+    current_rr = (runs / (overs_to_balls(overs_bowled) / 6)) if overs_to_balls(overs_bowled) > 0 else 0.0
+    batting_side = batting_team or favored_team
+    return f"HatCric leans {favored_team} because {batting_side} is scoring at {current_rr:.2f}, projects to {predicted_score}, and has {max(0, 10 - wickets)} wickets left."
+
+
 def _safe_int(value, default: int = 0) -> int:
     try:
         return int(float(value))
@@ -308,6 +347,62 @@ def serialize_match_info(match_info: dict) -> dict | None:
     }
 
 
+def _collect_player_name_list(value) -> list[str]:
+    names: list[str] = []
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                cleaned = item.strip()
+                if cleaned:
+                    names.append(cleaned)
+            elif isinstance(item, dict):
+                name = item.get("name") or item.get("fullName") or item.get("playerName") or item.get("nickName")
+                if isinstance(name, str) and name.strip():
+                    names.append(name.strip())
+    return names
+
+
+def _extract_lineups_from_container(container: dict, aliases: set[str]) -> list[str]:
+    for key in ("playingXI", "playingXi", "playing11", "players", "squad", "probableXI", "probableXi"):
+        lineup = _collect_player_name_list(container.get(key))
+        if len(lineup) >= 2:
+            return lineup
+
+    team_name = str(container.get("teamName") or container.get("name") or container.get("fullName") or "").strip().lower()
+    if team_name and team_name in aliases:
+        for key in ("players", "playingXI", "playingXi", "playing11", "squad", "probableXI", "probableXi"):
+            lineup = _collect_player_name_list(container.get(key))
+            if len(lineup) >= 2:
+                return lineup
+    return []
+
+
+def _find_lineup_candidates(value, aliases: set[str], found: list[list[str]]) -> None:
+    if isinstance(value, dict):
+        lineup = _extract_lineups_from_container(value, aliases)
+        if lineup:
+            found.append(lineup)
+        for nested in value.values():
+            _find_lineup_candidates(nested, aliases, found)
+    elif isinstance(value, list):
+        for item in value:
+            _find_lineup_candidates(item, aliases, found)
+
+
+def extract_preview_lineups(data: dict, team_a: str, team_b: str, team_a_full: str = "", team_b_full: str = "") -> tuple[list[str], list[str]]:
+    aliases_a = {alias.strip().lower() for alias in (team_a, team_a_full) if alias}
+    aliases_b = {alias.strip().lower() for alias in (team_b, team_b_full) if alias}
+
+    candidates_a: list[list[str]] = []
+    candidates_b: list[list[str]] = []
+    _find_lineup_candidates(data, aliases_a, candidates_a)
+    _find_lineup_candidates(data, aliases_b, candidates_b)
+
+    lineup_a = max(candidates_a, key=len, default=[])
+    lineup_b = max(candidates_b, key=len, default=[])
+    return lineup_a, lineup_b
+
+
 def is_ipl_t20_match(match_info: dict) -> bool:
     series_name = str(match_info.get("seriesName") or "").lower()
     match_format = str(match_info.get("matchFormat") or match_info.get("matchType") or "").lower()
@@ -346,6 +441,7 @@ def parse_score_response(data, match_id: str | None = None):
             "batters_at_crease": [],
             "predicted_score": 0,
             "prediction_note": "Awaiting live data",
+            "prediction_explanation": "HatCric is waiting for enough match context to explain the edge.",
             "win_probability": {"team_a": 50, "team_b": 50}
         }
 
@@ -441,6 +537,7 @@ def parse_score_response(data, match_id: str | None = None):
         res["wickets_in_hand"] = max(0, 10 - wickets)
 
         if res["state"] == "Preview":
+            lineup_a, lineup_b = extract_preview_lineups(data, res["team_a"], res["team_b"], team1_full, team2_full)
             res["win_probability"] = predict_match_probability(
                 res["team_a"],
                 res["team_b"],
@@ -448,8 +545,23 @@ def parse_score_response(data, match_id: str | None = None):
                 status=status,
                 team_a_full=team1_full,
                 team_b_full=team2_full,
+                team_a_lineup=lineup_a,
+                team_b_lineup=lineup_b,
             )
-            res["prediction_note"] = "ML pre-match model based on historical IPL results"
+            if lineup_a and lineup_b:
+                res["prediction_note"] = "ML pre-match model using announced lineups"
+            else:
+                res["prediction_note"] = "ML pre-match model based on historical IPL results"
+            res["prediction_explanation"] = build_prediction_explanation(
+                state=res["state"],
+                is_complete=res["is_complete"],
+                team_a=res["team_a"],
+                team_b=res["team_b"],
+                team_a_pct=int(res["win_probability"]["team_a"]),
+                team_b_pct=int(res["win_probability"]["team_b"]),
+                status=status,
+                used_lineups=bool(lineup_a and lineup_b),
+            )
 
         if not res["is_complete"] and res["state"] != "Preview":
             live_probability = predict_live_win_probability(
@@ -478,6 +590,22 @@ def parse_score_response(data, match_id: str | None = None):
                 req_rr = (runs_needed / (balls_remaining / 6)) if balls_remaining > 0 else 0
                 note_prefix = "Live ML chase model" if live_probability is not None else "Chase model"
                 res["prediction_note"] = f"{note_prefix}: {runs_needed} needed from {balls_remaining} balls at {req_rr:.2f} RPO"
+                res["prediction_explanation"] = build_prediction_explanation(
+                    state=res["state"],
+                    is_complete=res["is_complete"],
+                    team_a=res["team_a"],
+                    team_b=res["team_b"],
+                    team_a_pct=int(res["win_probability"]["team_a"]),
+                    team_b_pct=int(res["win_probability"]["team_b"]),
+                    status=status,
+                    batting_team=res["batting_team"],
+                    innings=int(res["innings"]),
+                    target=int(res["target"]),
+                    runs=runs,
+                    wickets=wickets,
+                    overs_bowled=overs_bowled,
+                    predicted_score=int(res["predicted_score"]),
+                )
             else:
                 res["predicted_score"] = project_first_innings_score(runs, wickets, overs_bowled)
                 if live_probability is not None:
@@ -491,6 +619,22 @@ def parse_score_response(data, match_id: str | None = None):
                 balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
                 note_prefix = "Live ML innings model" if live_probability is not None else "Projected total"
                 res["prediction_note"] = f"{note_prefix} with {balls_remaining} balls remaining"
+                res["prediction_explanation"] = build_prediction_explanation(
+                    state=res["state"],
+                    is_complete=res["is_complete"],
+                    team_a=res["team_a"],
+                    team_b=res["team_b"],
+                    team_a_pct=int(res["win_probability"]["team_a"]),
+                    team_b_pct=int(res["win_probability"]["team_b"]),
+                    status=status,
+                    batting_team=res["batting_team"],
+                    innings=int(res["innings"]),
+                    target=int(res["target"]),
+                    runs=runs,
+                    wickets=wickets,
+                    overs_bowled=overs_bowled,
+                    predicted_score=int(res["predicted_score"]),
+                )
 
         # 4. WIN PROBABILITY MATH FOR COMPLETED MATCHES
         if is_complete:
@@ -503,6 +647,15 @@ def parse_score_response(data, match_id: str | None = None):
                 res["win_probability"] = {"team_a": 50, "team_b": 50}
             res["predicted_score"] = runs
             res["prediction_note"] = status
+            res["prediction_explanation"] = build_prediction_explanation(
+                state=res["state"],
+                is_complete=res["is_complete"],
+                team_a=res["team_a"],
+                team_b=res["team_b"],
+                team_a_pct=int(res["win_probability"]["team_a"]),
+                team_b_pct=int(res["win_probability"]["team_b"]),
+                status=status,
+            )
 
         return res
 
@@ -518,6 +671,7 @@ def parse_score_response(data, match_id: str | None = None):
             "is_complete": False,
             "state": "Error",
             "batters_at_crease": [],
+            "prediction_explanation": "HatCric could not explain the edge because the match feed failed to parse.",
             "win_probability": {"team_a": 50, "team_b": 50},
         }
 
@@ -565,6 +719,7 @@ def get_match_data(match_id: str):
             ],
             "predicted_score": 185,
             "prediction_note": "65 needed from 34 balls at 11.47 RPO",
+            "prediction_explanation": "HatCric leans MI because the chase is alive, wickets are in hand, and the required rate is still manageable.",
             "win_probability": {"team_a": 42, "team_b": 58}
         })
 

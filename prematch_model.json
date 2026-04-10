@@ -1,13 +1,20 @@
 {
   "model_type": "catboost_classifier",
   "trained_on_matches": 1159,
-  "training_accuracy": 0.7023,
-  "weighted_log_loss": 0.7194,
-  "validation_accuracy": 0.5747,
-  "validation_log_loss": 0.9837,
+  "training_accuracy": 0.7688,
+  "weighted_log_loss": 0.6675,
+  "validation_accuracy": 0.5805,
+  "validation_log_loss": 0.9769,
   "blend_alpha": 1.0,
   "prediction_floor": 18,
   "prediction_ceiling": 82,
+  "catboost_params": {
+    "iterations": 650,
+    "learning_rate": 0.02,
+    "l2_leaf_reg": 8.0,
+    "depth": 7,
+    "random_strength": 1.5
+  },
   "weights": {},
   "catboost_model_path": "prematch_model.cbm",
   "cat_features": [
@@ -419,6 +426,3132 @@
       "batting": 1.6141676396106743,
       "bowling": 0.8353688342178838,
       "balance": 0.7787988053927906
+    }
+  },
+  "player_strengths": {
+    "sc ganguly": {
+      "batting": 1.137127,
+      "bowling": 0.461852
+    },
+    "p kumar": {
+      "batting": 0.184887,
+      "bowling": 0.6982
+    },
+    "bb mccullum": {
+      "batting": 1.642173,
+      "bowling": 0.0
+    },
+    "z khan": {
+      "batting": -0.222025,
+      "bowling": 0.969666
+    },
+    "aa noffke": {
+      "batting": 0.125,
+      "bowling": 0.333333
+    },
+    "rt ponting": {
+      "batting": -0.0496,
+      "bowling": 0.0
+    },
+    "jh kallis": {
+      "batting": 1.295195,
+      "bowling": 0.637708
+    },
+    "sb joshi": {
+      "batting": -0.797619,
+      "bowling": -0.02803
+    },
+    "dj hussey": {
+      "batting": 1.241217,
+      "bowling": 0.013508
+    },
+    "cl white": {
+      "batting": 1.28838,
+      "bowling": -0.93254
+    },
+    "mohammad hafeez": {
+      "batting": -0.0917,
+      "bowling": 0.716667
+    },
+    "r dravid": {
+      "batting": 1.416842,
+      "bowling": 0.0
+    },
+    "ab dinda": {
+      "batting": -0.732639,
+      "bowling": 0.740311
+    },
+    "w jaffer": {
+      "batting": 0.745753,
+      "bowling": 0.0
+    },
+    "i sharma": {
+      "batting": -0.315033,
+      "bowling": 0.562837
+    },
+    "v kohli": {
+      "batting": 2.045493,
+      "bowling": -0.070998
+    },
+    "ab agarkar": {
+      "batting": 0.535948,
+      "bowling": 0.391622
+    },
+    "mv boucher": {
+      "batting": 1.045542,
+      "bowling": 0.0
+    },
+    "b akhil": {
+      "batting": 0.611111,
+      "bowling": 0.453764
+    },
+    "lr shukla": {
+      "batting": 0.634561,
+      "bowling": 0.327613
+    },
+    "pa patel": {
+      "batting": 1.149115,
+      "bowling": 0.0
+    },
+    "b lee": {
+      "batting": 0.460511,
+      "bowling": 0.671103
+    },
+    "ml hayden": {
+      "batting": 2.143681,
+      "bowling": 0.0
+    },
+    "s sreesanth": {
+      "batting": -0.569865,
+      "bowling": 0.722348
+    },
+    "mek hussey": {
+      "batting": 1.926712,
+      "bowling": 0.0
+    },
+    "jr hopes": {
+      "batting": 1.42273,
+      "bowling": 0.3
+    },
+    "ik pathan": {
+      "batting": 0.752423,
+      "bowling": 0.739642
+    },
+    "ms dhoni": {
+      "batting": 1.471961,
+      "bowling": 0.0
+    },
+    "sk raina": {
+      "batting": 1.756679,
+      "bowling": 0.46043
+    },
+    "k goel": {
+      "batting": 0.436598,
+      "bowling": -0.113636
+    },
+    "pp chawla": {
+      "batting": 0.269564,
+      "bowling": 0.853034
+    },
+    "wa mota": {
+      "batting": -0.177778,
+      "bowling": 0.455357
+    },
+    "jdp oram": {
+      "batting": 0.262205,
+      "bowling": 0.326854
+    },
+    "s badrinath": {
+      "batting": 1.235702,
+      "bowling": 0.0
+    },
+    "ms gony": {
+      "batting": 0.750305,
+      "bowling": 0.547534
+    },
+    "kc sangakkara": {
+      "batting": 1.417118,
+      "bowling": 0.0
+    },
+    "m muralitharan": {
+      "batting": -0.54321,
+      "bowling": 1.079205
+    },
+    "p amarnath": {
+      "batting": 0.0,
+      "bowling": 0.290404
+    },
+    "joginder sharma": {
+      "batting": 0.4,
+      "bowling": 0.211589
+    },
+    "yuvraj singh": {
+      "batting": 1.324192,
+      "bowling": 0.558272
+    },
+    "sm katich": {
+      "batting": 1.336795,
+      "bowling": 0.0
+    },
+    "t kohli": {
+      "batting": -0.572612,
+      "bowling": 0.0
+    },
+    "gd mcgrath": {
+      "batting": -0.388889,
+      "bowling": 1.061508
+    },
+    "yk pathan": {
+      "batting": 1.436107,
+      "bowling": 0.578136
+    },
+    "b geeves": {
+      "batting": 0.0,
+      "bowling": -0.427083
+    },
+    "sr watson": {
+      "batting": 1.742641,
+      "bowling": 0.776798
+    },
+    "m kaif": {
+      "batting": 0.456909,
+      "bowling": 0.0
+    },
+    "mf maharoof": {
+      "batting": 1.001161,
+      "bowling": 1.267857
+    },
+    "r bhatia": {
+      "batting": 0.409537,
+      "bowling": 0.795481
+    },
+    "ds lehmann": {
+      "batting": 0.25,
+      "bowling": 0.0
+    },
+    "ra jadeja": {
+      "batting": 1.059348,
+      "bowling": 0.712344
+    },
+    "m rawat": {
+      "batting": -0.225845,
+      "bowling": 0.0
+    },
+    "dl vettori": {
+      "batting": 0.258634,
+      "bowling": 0.989363
+    },
+    "d salunkhe": {
+      "batting": 0.829861,
+      "bowling": -0.322695
+    },
+    "sk warne": {
+      "batting": 0.074464,
+      "bowling": 1.041703
+    },
+    "sk trivedi": {
+      "batting": -0.443503,
+      "bowling": 0.825808
+    },
+    "g gambhir": {
+      "batting": 1.597269,
+      "bowling": 0.0
+    },
+    "mm patel": {
+      "batting": -0.13042,
+      "bowling": 1.116561
+    },
+    "v sehwag": {
+      "batting": 1.926249,
+      "bowling": -0.258578
+    },
+    "s dhawan": {
+      "batting": 1.803497,
+      "bowling": 0.493056
+    },
+    "l ronchi": {
+      "batting": 0.127778,
+      "bowling": 0.0
+    },
+    "st jayasuriya": {
+      "batting": 1.726734,
+      "bowling": 0.526077
+    },
+    "dj thornely": {
+      "batting": -0.038522,
+      "bowling": 1.196429
+    },
+    "rv uthappa": {
+      "batting": 1.53645,
+      "bowling": 0.0
+    },
+    "pr shah": {
+      "batting": 0.331637,
+      "bowling": 0.0
+    },
+    "r vinay kumar": {
+      "batting": 0.338782,
+      "bowling": 0.719131
+    },
+    "am nayar": {
+      "batting": 0.702473,
+      "bowling": 0.285567
+    },
+    "sm pollock": {
+      "batting": 1.176239,
+      "bowling": 1.069259
+    },
+    "harbhajan singh": {
+      "batting": 0.758711,
+      "bowling": 1.008959
+    },
+    "s chanderpaul": {
+      "batting": -0.028973,
+      "bowling": 0.0
+    },
+    "a nehra": {
+      "batting": -0.5394,
+      "bowling": 1.043964
+    },
+    "ds kulkarni": {
+      "batting": -0.007407,
+      "bowling": 0.704083
+    },
+    "lrpl taylor": {
+      "batting": 1.092829,
+      "bowling": -1.0
+    },
+    "ac gilchrist": {
+      "batting": 1.666739,
+      "bowling": 2.833333
+    },
+    "y venugopal rao": {
+      "batting": 1.047536,
+      "bowling": -0.090278
+    },
+    "vvs laxman": {
+      "batting": 0.603558,
+      "bowling": 0.0
+    },
+    "a symonds": {
+      "batting": 1.62642,
+      "bowling": 0.637149
+    },
+    "m kartik": {
+      "batting": 0.283321,
+      "bowling": 0.663728
+    },
+    "rg sharma": {
+      "batting": 1.653154,
+      "bowling": 0.3862
+    },
+    "sb styris": {
+      "batting": 0.458981,
+      "bowling": 0.689394
+    },
+    "as yadav": {
+      "batting": 0.524217,
+      "bowling": 0.0
+    },
+    "sb bangar": {
+      "batting": 0.134165,
+      "bowling": 0.18037
+    },
+    "wpujc vaas": {
+      "batting": 0.296077,
+      "bowling": 1.265548
+    },
+    "rp singh": {
+      "batting": -0.541562,
+      "bowling": 0.96419
+    },
+    "wp saha": {
+      "batting": 1.225209,
+      "bowling": 0.0
+    },
+    "pp ojha": {
+      "batting": -1.008772,
+      "bowling": 0.978103
+    },
+    "dpmd jayawardene": {
+      "batting": 1.34701,
+      "bowling": 0.0
+    },
+    "pankaj singh": {
+      "batting": -0.693056,
+      "bowling": 0.199216
+    },
+    "s sohal": {
+      "batting": 1.097565,
+      "bowling": 0.0
+    },
+    "kamran akmal": {
+      "batting": 1.736467,
+      "bowling": 0.0
+    },
+    "mohammad asif": {
+      "batting": -0.791667,
+      "bowling": 0.520833
+    },
+    "vy mahesh": {
+      "batting": -0.638889,
+      "bowling": 0.821447
+    },
+    "shahid afridi": {
+      "batting": 1.201087,
+      "bowling": 0.875
+    },
+    "dj bravo": {
+      "batting": 0.90748,
+      "bowling": 0.869036
+    },
+    "vs yeligati": {
+      "batting": -0.138889,
+      "bowling": -0.95
+    },
+    "ma khote": {
+      "batting": 0.308081,
+      "bowling": 0.283333
+    },
+    "gc smith": {
+      "batting": 1.335271,
+      "bowling": 0.0
+    },
+    "d kalyankrishna": {
+      "batting": -0.864583,
+      "bowling": -0.163194
+    },
+    "rr sarwan": {
+      "batting": 0.730556,
+      "bowling": 0.0
+    },
+    "vrv singh": {
+      "batting": 0.277778,
+      "bowling": 0.297222
+    },
+    "ss tiwary": {
+      "batting": 1.141735,
+      "bowling": 0.0
+    },
+    "sohail tanvir": {
+      "batting": 0.451724,
+      "bowling": 2.051282
+    },
+    "a kumble": {
+      "batting": -0.439519,
+      "bowling": 1.248298
+    },
+    "dnt zoysa": {
+      "batting": 0.333333,
+      "bowling": 0.305556
+    },
+    "am rahane": {
+      "batting": 1.571253,
+      "bowling": 1.583333
+    },
+    "sd chitnis": {
+      "batting": 0.577949,
+      "bowling": 0.333333
+    },
+    "shoaib malik": {
+      "batting": 0.460757,
+      "bowling": -0.166667
+    },
+    "mk tiwary": {
+      "batting": 1.096753,
+      "bowling": -0.825397
+    },
+    "kd karthik": {
+      "batting": 1.338703,
+      "bowling": 0.0
+    },
+    "tm srivastava": {
+      "batting": -0.442761,
+      "bowling": 0.0
+    },
+    "dw steyn": {
+      "batting": 0.090455,
+      "bowling": 1.128713
+    },
+    "b chipli": {
+      "batting": 0.635163,
+      "bowling": -3.0
+    },
+    "ja morkel": {
+      "batting": 1.093889,
+      "bowling": 0.741874
+    },
+    "db das": {
+      "batting": 0.723615,
+      "bowling": 0.0
+    },
+    "crd fernando": {
+      "batting": 0.277778,
+      "bowling": 1.50641
+    },
+    "mk pandey": {
+      "batting": 1.364589,
+      "bowling": 0.0
+    },
+    "hh gibbs": {
+      "batting": 1.239651,
+      "bowling": 0.0
+    },
+    "gagandeep singh": {
+      "batting": 0.0,
+      "bowling": 0.107143
+    },
+    "se marsh": {
+      "batting": 2.121738,
+      "bowling": 0.0
+    },
+    "sa asnodkar": {
+      "batting": 1.296577,
+      "bowling": 0.0
+    },
+    "umar gul": {
+      "batting": 1.607456,
+      "bowling": 1.622222
+    },
+    "salman butt": {
+      "batting": 1.530193,
+      "bowling": 0.0
+    },
+    "bj hodge": {
+      "batting": 1.319532,
+      "bowling": 0.766026
+    },
+    "sp fleming": {
+      "batting": 1.073737,
+      "bowling": 0.0
+    },
+    "s vidyut": {
+      "batting": 1.169788,
+      "bowling": 0.083333
+    },
+    "pj sangwan": {
+      "batting": -0.658189,
+      "bowling": 0.581071
+    },
+    "m ntini": {
+      "batting": -0.430556,
+      "bowling": 0.919577
+    },
+    "ab de villiers": {
+      "batting": 2.069162,
+      "bowling": 0.0
+    },
+    "dp vijaykumar": {
+      "batting": -0.194444,
+      "bowling": 0.406555
+    },
+    "misbah-ul-haq": {
+      "batting": 1.118056,
+      "bowling": 0.0
+    },
+    "yv takawale": {
+      "batting": 0.914981,
+      "bowling": 0.0
+    },
+    "rr raje": {
+      "batting": 0.111111,
+      "bowling": 0.244604
+    },
+    "dt patil": {
+      "batting": 0.111111,
+      "bowling": 0.0
+    },
+    "s anirudha": {
+      "batting": 0.634054,
+      "bowling": 0.0
+    },
+    "l balaji": {
+      "batting": -0.427786,
+      "bowling": 0.852935
+    },
+    "ck kapugedera": {
+      "batting": -0.334138,
+      "bowling": -2.323529
+    },
+    "a chopra": {
+      "batting": -0.076161,
+      "bowling": 0.0
+    },
+    "t taibu": {
+      "batting": 0.564459,
+      "bowling": 0.0
+    },
+    "j arunkumar": {
+      "batting": 0.175926,
+      "bowling": 0.0
+    },
+    "db ravi teja": {
+      "batting": 0.81204,
+      "bowling": 0.083333
+    },
+    "u kaul": {
+      "batting": -1.5,
+      "bowling": 0.0
+    },
+    "ad mascarenhas": {
+      "batting": 0.088889,
+      "bowling": 1.522887
+    },
+    "tm dilshan": {
+      "batting": 1.239463,
+      "bowling": 0.158517
+    },
+    "a mishra": {
+      "batting": 0.021483,
+      "bowling": 1.048848
+    },
+    "nk patel": {
+      "batting": 0.891379,
+      "bowling": 0.0
+    },
+    "la pomersbach": {
+      "batting": 1.083164,
+      "bowling": 0.0
+    },
+    "iqbal abdulla": {
+      "batting": 0.185592,
+      "bowling": 0.905255
+    },
+    "shoaib akhtar": {
+      "batting": -1.031746,
+      "bowling": 1.460317
+    },
+    "sr tendulkar": {
+      "batting": 1.660083,
+      "bowling": -0.416667
+    },
+    "pm sarvesh kumar": {
+      "batting": -0.819444,
+      "bowling": 0.316667
+    },
+    "rr powar": {
+      "batting": 0.241071,
+      "bowling": 0.515672
+    },
+    "abdur razzak": {
+      "batting": -1.5,
+      "bowling": -1.625
+    },
+    "lpc silva": {
+      "batting": 1.163818,
+      "bowling": -3.25
+    },
+    "h das": {
+      "batting": -0.888889,
+      "bowling": 0.0
+    },
+    "sp goswami": {
+      "batting": 0.516658,
+      "bowling": 0.0
+    },
+    "dr smith": {
+      "batting": 1.695733,
+      "bowling": 0.21684
+    },
+    "a nel": {
+      "batting": 0.0,
+      "bowling": 0.25
+    },
+    "a mukund": {
+      "batting": 0.107323,
+      "bowling": 0.0
+    },
+    "baw mendis": {
+      "batting": -0.819444,
+      "bowling": 0.708333
+    },
+    "younis khan": {
+      "batting": -0.797619,
+      "bowling": 0.0
+    },
+    "t thushara": {
+      "batting": -0.5,
+      "bowling": 1.322222
+    },
+    "a flintoff": {
+      "batting": 1.110412,
+      "bowling": 0.169192
+    },
+    "jp duminy": {
+      "batting": 1.512521,
+      "bowling": 0.546024
+    },
+    "sl malinga": {
+      "batting": -0.120241,
+      "bowling": 1.388149
+    },
+    "jd ryder": {
+      "batting": 1.30556,
+      "bowling": 0.490819
+    },
+    "kp pietersen": {
+      "batting": 1.728804,
+      "bowling": 0.59527
+    },
+    "kamran khan": {
+      "batting": -0.583333,
+      "bowling": 0.352941
+    },
+    "t henderson": {
+      "batting": -0.335069,
+      "bowling": 0.75
+    },
+    "rs bopara": {
+      "batting": 1.39088,
+      "bowling": 0.528548
+    },
+    "dp nannes": {
+      "batting": -1.004274,
+      "bowling": 0.981842
+    },
+    "am salvi": {
+      "batting": 0.0,
+      "bowling": 0.833333
+    },
+    "ya abdulla": {
+      "batting": -1.5,
+      "bowling": 0.933014
+    },
+    "vs malik": {
+      "batting": -0.055556,
+      "bowling": 0.474859
+    },
+    "fh edwards": {
+      "batting": -0.388889,
+      "bowling": 1.044444
+    },
+    "ch gayle": {
+      "batting": 2.375995,
+      "bowling": 0.407014
+    },
+    "harmeet singh": {
+      "batting": 0.625,
+      "bowling": 0.806304
+    },
+    "mc henriques": {
+      "batting": 1.09969,
+      "bowling": 0.512933
+    },
+    "r bishnoi": {
+      "batting": 0.248911,
+      "bowling": 0.0
+    },
+    "kv sharma": {
+      "batting": 0.480414,
+      "bowling": 0.698805
+    },
+    "rr bose": {
+      "batting": 0.0,
+      "bowling": -1.0
+    },
+    "kp appanna": {
+      "batting": -0.837963,
+      "bowling": 0.590812
+    },
+    "m manhas": {
+      "batting": 0.618483,
+      "bowling": 0.5
+    },
+    "rj quiney": {
+      "batting": 0.610648,
+      "bowling": 0.0
+    },
+    "as raut": {
+      "batting": 0.544962,
+      "bowling": -0.2
+    },
+    "shoaib ahmed": {
+      "batting": -1.273148,
+      "bowling": 0.359944
+    },
+    "aa bilakhia": {
+      "batting": 0.062325,
+      "bowling": 0.0
+    },
+    "yashpal singh": {
+      "batting": -0.296875,
+      "bowling": 0.0
+    },
+    "an ghosh": {
+      "batting": -0.211806,
+      "bowling": 0.0
+    },
+    "pc valthaty": {
+      "batting": 1.283308,
+      "bowling": 0.546909
+    },
+    "re van der merwe": {
+      "batting": 0.498463,
+      "bowling": 1.147103
+    },
+    "mn van wyk": {
+      "batting": 1.936995,
+      "bowling": 0.0
+    },
+    "tl suman": {
+      "batting": 0.932528,
+      "bowling": 0.484545
+    },
+    "s tyagi": {
+      "batting": -0.395833,
+      "bowling": 0.239918
+    },
+    "gr napier": {
+      "batting": 0.505208,
+      "bowling": 1.145833
+    },
+    "sm harwood": {
+      "batting": -0.446429,
+      "bowling": 1.008333
+    },
+    "la carseldine": {
+      "batting": 0.888971,
+      "bowling": 1.333333
+    },
+    "nv ojha": {
+      "batting": 0.916968,
+      "bowling": 0.0
+    },
+    "m vijay": {
+      "batting": 1.427375,
+      "bowling": -0.041667
+    },
+    "sb jakati": {
+      "batting": 0.018008,
+      "bowling": 0.681144
+    },
+    "da warner": {
+      "batting": 2.24717,
+      "bowling": 1.5
+    },
+    "d du preez": {
+      "batting": 0.017094,
+      "bowling": 1.666667
+    },
+    "rj harris": {
+      "batting": 0.115327,
+      "bowling": 1.125893
+    },
+    "a singh": {
+      "batting": -1.227778,
+      "bowling": 1.048319
+    },
+    "m morkel": {
+      "batting": 0.6,
+      "bowling": 1.005455
+    },
+    "a mithun": {
+      "batting": 0.44943,
+      "bowling": -0.09375
+    },
+    "c nanda": {
+      "batting": -1.5,
+      "bowling": 0.774306
+    },
+    "ss sarkar": {
+      "batting": 0.0,
+      "bowling": 0.376667
+    },
+    "ad mathews": {
+      "batting": 1.084149,
+      "bowling": 0.46522
+    },
+    "j botha": {
+      "batting": 0.735603,
+      "bowling": 0.883638
+    },
+    "mashrafe mortaza": {
+      "batting": -0.138889,
+      "bowling": -1.625
+    },
+    "gj bailey": {
+      "batting": 1.046586,
+      "bowling": 0.0
+    },
+    "anureet singh": {
+      "batting": -0.292553,
+      "bowling": 0.370879
+    },
+    "ab mcdonald": {
+      "batting": 0.923044,
+      "bowling": 0.822478
+    },
+    "y nagar": {
+      "batting": 0.667149,
+      "bowling": -0.424242
+    },
+    "ck langeveldt": {
+      "batting": -0.166667,
+      "bowling": 1.749542
+    },
+    "ss shaikh": {
+      "batting": -0.095238,
+      "bowling": 0.0
+    },
+    "r ashwin": {
+      "batting": 0.494437,
+      "bowling": 0.919181
+    },
+    "mohammad ashraful": {
+      "batting": -1.138889,
+      "bowling": 0.0
+    },
+    "ra shaikh": {
+      "batting": 0.0,
+      "bowling": -0.75
+    },
+    "jaskaran singh": {
+      "batting": -0.479798,
+      "bowling": 0.19958
+    },
+    "ca pujara": {
+      "batting": 0.731652,
+      "bowling": 0.0
+    },
+    "oa shah": {
+      "batting": 1.403742,
+      "bowling": 0.0
+    },
+    "anirudh singh": {
+      "batting": 0.568182,
+      "bowling": 0.0
+    },
+    "sw tait": {
+      "batting": -0.138675,
+      "bowling": 0.8831
+    },
+    "a uniyal": {
+      "batting": -0.674603,
+      "bowling": 0.083333
+    },
+    "ap tare": {
+      "batting": 0.749729,
+      "bowling": 0.0
+    },
+    "at rayudu": {
+      "batting": 1.400015,
+      "bowling": 0.0
+    },
+    "aa jhunjhunwala": {
+      "batting": 0.59537,
+      "bowling": -0.193137
+    },
+    "r sathish": {
+      "batting": 0.586039,
+      "bowling": -0.325026
+    },
+    "r mclaren": {
+      "batting": 0.341768,
+      "bowling": 0.258945
+    },
+    "ag murtaza": {
+      "batting": -0.421958,
+      "bowling": 0.846591
+    },
+    "p dogra": {
+      "batting": 0.238325,
+      "bowling": 0.0
+    },
+    "ms bisla": {
+      "batting": 1.123242,
+      "bowling": 0.0
+    },
+    "ejg morgan": {
+      "batting": 1.069425,
+      "bowling": 0.0
+    },
+    "rs gavaskar": {
+      "batting": -1.076389,
+      "bowling": 0.0
+    },
+    "jm kemp": {
+      "batting": 0.576389,
+      "bowling": 0.776163
+    },
+    "s ladda": {
+      "batting": -1.5,
+      "bowling": 0.02818
+    },
+    "bipul sharma": {
+      "batting": 1.011518,
+      "bowling": 0.491868
+    },
+    "se bond": {
+      "batting": -0.819444,
+      "bowling": 1.131048
+    },
+    "ka pollard": {
+      "batting": 1.436864,
+      "bowling": 0.362925
+    },
+    "mj lumb": {
+      "batting": 1.578274,
+      "bowling": 0.0
+    },
+    "dr martyn": {
+      "batting": 0.545139,
+      "bowling": 0.0
+    },
+    "s narwal": {
+      "batting": 0.726852,
+      "bowling": -0.164046
+    },
+    "ut yadav": {
+      "batting": 0.034273,
+      "bowling": 0.687781
+    },
+    "sj srivastava": {
+      "batting": -0.180556,
+      "bowling": 0.5338
+    },
+    "ab barath": {
+      "batting": 0.527778,
+      "bowling": 0.0
+    },
+    "fy fazal": {
+      "batting": 0.746497,
+      "bowling": -0.5
+    },
+    "ac voges": {
+      "batting": 1.518676,
+      "bowling": -0.111111
+    },
+    "md mishra": {
+      "batting": 0.698789,
+      "bowling": 0.0
+    },
+    "r sharma": {
+      "batting": -0.207018,
+      "bowling": 1.01489
+    },
+    "j theron": {
+      "batting": -0.178451,
+      "bowling": 0.491898
+    },
+    "nltc perera": {
+      "batting": 1.029969,
+      "bowling": 0.499894
+    },
+    "km jadhav": {
+      "batting": 0.864747,
+      "bowling": 0.0
+    },
+    "mandeep singh": {
+      "batting": 1.005817,
+      "bowling": -1.25
+    },
+    "kb arun karthik": {
+      "batting": 0.203704,
+      "bowling": 0.0
+    },
+    "kaj roach": {
+      "batting": 0.444444,
+      "bowling": -0.5
+    },
+    "pd collingwood": {
+      "batting": 1.737714,
+      "bowling": 0.992197
+    },
+    "c ganapathy": {
+      "batting": 0.0,
+      "bowling": -1.25
+    },
+    "mb parmar": {
+      "batting": 0.0,
+      "bowling": -0.75
+    },
+    "sb wagh": {
+      "batting": -0.611111,
+      "bowling": 0.506127
+    },
+    "de bollinger": {
+      "batting": -0.067029,
+      "bowling": 1.337288
+    },
+    "jd unadkat": {
+      "batting": 0.399618,
+      "bowling": 0.560532
+    },
+    "ap dole": {
+      "batting": 1.376263,
+      "bowling": 0.843434
+    },
+    "an ahmed": {
+      "batting": 0.564103,
+      "bowling": 0.416724
+    },
+    "mr marsh": {
+      "batting": 1.736473,
+      "bowling": 0.759182
+    },
+    "l ablish": {
+      "batting": -1.5,
+      "bowling": 0.154762
+    },
+    "rs sodhi": {
+      "batting": 1.222222,
+      "bowling": 0.0
+    },
+    "s sriram": {
+      "batting": 0.4375,
+      "bowling": -2.083333
+    },
+    "b sumanth": {
+      "batting": 0.168544,
+      "bowling": 0.0
+    },
+    "c madan": {
+      "batting": 0.320175,
+      "bowling": 0.0
+    },
+    "ag paunikar": {
+      "batting": 0.100479,
+      "bowling": 0.0
+    },
+    "aj finch": {
+      "batting": 1.387216,
+      "bowling": -0.170543
+    },
+    "str binny": {
+      "batting": 0.853767,
+      "bowling": 0.373188
+    },
+    "nd doshi": {
+      "batting": -1.5,
+      "bowling": 0.300595
+    },
+    "tg southee": {
+      "batting": 0.252746,
+      "bowling": 0.537496
+    },
+    "s randiv": {
+      "batting": -0.763889,
+      "bowling": 0.702586
+    },
+    "ir jaggi": {
+      "batting": 0.082556,
+      "bowling": 0.0
+    },
+    "dt christian": {
+      "batting": 0.56803,
+      "bowling": 0.621343
+    },
+    "al menaria": {
+      "batting": 0.876605,
+      "bowling": 0.244697
+    },
+    "auk pathan": {
+      "batting": 0.929089,
+      "bowling": -0.423077
+    },
+    "rv gomez": {
+      "batting": 0.034132,
+      "bowling": 0.447338
+    },
+    "ma agarwal": {
+      "batting": 1.37358,
+      "bowling": 0.0
+    },
+    "ubt chand": {
+      "batting": 0.583333,
+      "bowling": 0.0
+    },
+    "jec franklin": {
+      "batting": 0.99339,
+      "bowling": 0.31457
+    },
+    "dj jacobs": {
+      "batting": 0.403628,
+      "bowling": 0.0
+    },
+    "ac thomas": {
+      "batting": 0.093567,
+      "bowling": 0.858586
+    },
+    "sunny singh": {
+      "batting": 0.711649,
+      "bowling": 0.0
+    },
+    "wd parnell": {
+      "batting": -0.206597,
+      "bowling": 0.939855
+    },
+    "nj rimmington": {
+      "batting": -0.194444,
+      "bowling": 0.416667
+    },
+    "rn ten doeschate": {
+      "batting": 1.096476,
+      "bowling": 0.358974
+    },
+    "s nadeem": {
+      "batting": -0.831322,
+      "bowling": 0.671874
+    },
+    "ba bhatt": {
+      "batting": -0.261905,
+      "bowling": 0.654842
+    },
+    "jj van der wath": {
+      "batting": 0.239583,
+      "bowling": 0.145833
+    },
+    "s aravind": {
+      "batting": 0.121637,
+      "bowling": 0.936184
+    },
+    "r ninan": {
+      "batting": -0.708333,
+      "bowling": 0.541667
+    },
+    "shakib al hasan": {
+      "batting": 0.875055,
+      "bowling": 0.883039
+    },
+    "ms wade": {
+      "batting": 0.604469,
+      "bowling": 0.0
+    },
+    "td paine": {
+      "batting": -0.741453,
+      "bowling": 0.0
+    },
+    "dh yagnik": {
+      "batting": 0.60665,
+      "bowling": 0.0
+    },
+    "bj haddin": {
+      "batting": 1.545455,
+      "bowling": 0.0
+    },
+    "j syed mohammad": {
+      "batting": 0.347222,
+      "bowling": 0.416667
+    },
+    "vr aaron": {
+      "batting": -0.400463,
+      "bowling": 0.534737
+    },
+    "nl mccullum": {
+      "batting": 0.699495,
+      "bowling": 0.3
+    },
+    "je taylor": {
+      "batting": -0.166667,
+      "bowling": 0.987179
+    },
+    "kmdn kulasekara": {
+      "batting": 0.861111,
+      "bowling": 1.068627
+    },
+    "tr birt": {
+      "batting": 0.949713,
+      "bowling": 0.0
+    },
+    "harpreet singh": {
+      "batting": 0.646183,
+      "bowling": 0.0
+    },
+    "m klinger": {
+      "batting": 0.698954,
+      "bowling": 0.0
+    },
+    "p parameswaran": {
+      "batting": -0.847222,
+      "bowling": 0.755682
+    },
+    "ac blizzard": {
+      "batting": 1.119048,
+      "bowling": 0.0
+    },
+    "i malhotra": {
+      "batting": 1.076389,
+      "bowling": -3.75
+    },
+    "ca ingram": {
+      "batting": 0.690821,
+      "bowling": 0.0
+    },
+    "b kumar": {
+      "batting": -0.110008,
+      "bowling": 0.949855
+    },
+    "cj ferguson": {
+      "batting": 0.227564,
+      "bowling": 0.0
+    },
+    "aa kazi": {
+      "batting": 0.0,
+      "bowling": -0.625
+    },
+    "anand rajan": {
+      "batting": 0.0,
+      "bowling": 0.809843
+    },
+    "p prasanth": {
+      "batting": 0.0,
+      "bowling": -2.5
+    },
+    "y gnaneswara rao": {
+      "batting": 0.952614,
+      "bowling": 0.25
+    },
+    "aa chavan": {
+      "batting": 0.085859,
+      "bowling": 0.541046
+    },
+    "s rana": {
+      "batting": 0.536265,
+      "bowling": 0.3125
+    },
+    "rw price": {
+      "batting": 0.0,
+      "bowling": -0.75
+    },
+    "f du plessis": {
+      "batting": 2.01524,
+      "bowling": -2.0
+    },
+    "re levi": {
+      "batting": 0.689751,
+      "bowling": 0.0
+    },
+    "gj maxwell": {
+      "batting": 1.655501,
+      "bowling": 0.334026
+    },
+    "m de lange": {
+      "batting": -0.819444,
+      "bowling": 0.486111
+    },
+    "spd smith": {
+      "batting": 1.598712,
+      "bowling": 0.75
+    },
+    "mn samuels": {
+      "batting": 0.308947,
+      "bowling": 0.691164
+    },
+    "sa yadav": {
+      "batting": 1.966871,
+      "bowling": 0.0
+    },
+    "jp faulkner": {
+      "batting": 0.921629,
+      "bowling": 0.62849
+    },
+    "kk cooper": {
+      "batting": 1.16939,
+      "bowling": 1.128646
+    },
+    "daj bracewell": {
+      "batting": 0.833333,
+      "bowling": 2.5
+    },
+    "hv patel": {
+      "batting": 0.304714,
+      "bowling": 0.840033
+    },
+    "ankit sharma": {
+      "batting": 0.606468,
+      "bowling": 0.670423
+    },
+    "dj harris": {
+      "batting": 1.415429,
+      "bowling": -0.166667
+    },
+    "tp sudhindra": {
+      "batting": 0.0,
+      "bowling": -0.636508
+    },
+    "sp narine": {
+      "batting": 1.438098,
+      "bowling": 1.156453
+    },
+    "gb hogg": {
+      "batting": 0.055556,
+      "bowling": 1.045886
+    },
+    "rr bhatkal": {
+      "batting": -1.5,
+      "bowling": -2.375
+    },
+    "p awana": {
+      "batting": -0.998016,
+      "bowling": 0.918583
+    },
+    "cj mckay": {
+      "batting": -0.388889,
+      "bowling": 0.27381
+    },
+    "v pratap singh": {
+      "batting": -1.5,
+      "bowling": 0.749455
+    },
+    "n saini": {
+      "batting": 0.518913,
+      "bowling": 0.0
+    },
+    "da miller": {
+      "batting": 1.509834,
+      "bowling": 0.0
+    },
+    "azhar mahmood": {
+      "batting": 1.127115,
+      "bowling": 1.095417
+    },
+    "p negi": {
+      "batting": 0.667666,
+      "bowling": 0.707424
+    },
+    "a chandila": {
+      "batting": -0.674603,
+      "bowling": 1.212607
+    },
+    "lj wright": {
+      "batting": 1.886111,
+      "bowling": -0.341941
+    },
+    "rj peterson": {
+      "batting": 0.188889,
+      "bowling": 0.4375
+    },
+    "a ashish reddy": {
+      "batting": 1.008734,
+      "bowling": 0.466317
+    },
+    "r shukla": {
+      "batting": -0.203502,
+      "bowling": -0.004762
+    },
+    "bb samantray": {
+      "batting": 0.750799,
+      "bowling": 0.0
+    },
+    "mj clarke": {
+      "batting": 0.710599,
+      "bowling": 0.810606
+    },
+    "bw hilfenhaus": {
+      "batting": 0.0,
+      "bowling": 1.14698
+    },
+    "gurkeerat singh": {
+      "batting": 0.911581,
+      "bowling": 0.82906
+    },
+    "ap majumdar": {
+      "batting": 1.139254,
+      "bowling": 0.0
+    },
+    "pa reddy": {
+      "batting": 0.638356,
+      "bowling": 0.0
+    },
+    "ad russell": {
+      "batting": 1.954408,
+      "bowling": 0.483359
+    },
+    "k upadhyay": {
+      "batting": 0.5,
+      "bowling": -0.25
+    },
+    "ca lynn": {
+      "batting": 2.038815,
+      "bowling": 0.0
+    },
+    "sunny gupta": {
+      "batting": -1.5,
+      "bowling": -1.916667
+    },
+    "mc juneja": {
+      "batting": 0.705357,
+      "bowling": 0.0
+    },
+    "mg johnson": {
+      "batting": 0.042987,
+      "bowling": 0.870962
+    },
+    "jj bumrah": {
+      "batting": -0.209169,
+      "bowling": 1.208721
+    },
+    "kk nair": {
+      "batting": 1.471224,
+      "bowling": 0.0
+    },
+    "gh vihari": {
+      "batting": 0.22338,
+      "bowling": 0.25
+    },
+    "mdkj perera": {
+      "batting": 0.235043,
+      "bowling": 0.0
+    },
+    "s badree": {
+      "batting": -0.649034,
+      "bowling": 0.909238
+    },
+    "as rajpoot": {
+      "batting": -0.500968,
+      "bowling": 0.381527
+    },
+    "b laughlin": {
+      "batting": -0.949786,
+      "bowling": 0.408069
+    },
+    "m vohra": {
+      "batting": 1.331892,
+      "bowling": 0.0
+    },
+    "mohammed shami": {
+      "batting": -0.163767,
+      "bowling": 0.764067
+    },
+    "bmaj mendis": {
+      "batting": -0.009259,
+      "bowling": 0.616667
+    },
+    "ch morris": {
+      "batting": 1.141635,
+      "bowling": 0.984003
+    },
+    "s kaul": {
+      "batting": -0.682099,
+      "bowling": 0.702172
+    },
+    "r dhawan": {
+      "batting": 0.434046,
+      "bowling": 0.559822
+    },
+    "mm sharma": {
+      "batting": -0.119621,
+      "bowling": 0.76258
+    },
+    "r rampaul": {
+      "batting": -0.005168,
+      "bowling": 1.358925
+    },
+    "smsm senanayake": {
+      "batting": -0.625817,
+      "bowling": 1.304688
+    },
+    "sv samson": {
+      "batting": 1.7496,
+      "bowling": 0.0
+    },
+    "q de kock": {
+      "batting": 1.730304,
+      "bowling": 0.0
+    },
+    "jo holder": {
+      "batting": 0.567282,
+      "bowling": 0.757632
+    },
+    "ic pandey": {
+      "batting": -1.5,
+      "bowling": 0.706169
+    },
+    "ys chahal": {
+      "batting": -0.841294,
+      "bowling": 1.089939
+    },
+    "x thalaivan sargunam": {
+      "batting": -0.20915,
+      "bowling": 0.0
+    },
+    "djg sammy": {
+      "batting": 0.849527,
+      "bowling": 0.25788
+    },
+    "kw richardson": {
+      "batting": 0.153846,
+      "bowling": 0.929949
+    },
+    "bj rohrer": {
+      "batting": 1.696429,
+      "bowling": -1.0
+    },
+    "p suyal": {
+      "batting": 0.0,
+      "bowling": -0.026042
+    },
+    "mg neser": {
+      "batting": 0.0,
+      "bowling": -1.875
+    },
+    "cm gautam": {
+      "batting": 0.630556,
+      "bowling": 0.0
+    },
+    "pv tambe": {
+      "batting": -0.75641,
+      "bowling": 0.786944
+    },
+    "parvez rasool": {
+      "batting": -0.201389,
+      "bowling": 0.25
+    },
+    "ua birla": {
+      "batting": -0.486111,
+      "bowling": 0.0
+    },
+    "sandeep sharma": {
+      "batting": -0.371795,
+      "bowling": 0.887498
+    },
+    "kl rahul": {
+      "batting": 2.365378,
+      "bowling": 0.0
+    },
+    "sachin baby": {
+      "batting": 0.752696,
+      "bowling": 1.633333
+    },
+    "nm coulter-nile": {
+      "batting": -0.076852,
+      "bowling": 1.159713
+    },
+    "cj anderson": {
+      "batting": 1.120486,
+      "bowling": -0.199495
+    },
+    "ma starc": {
+      "batting": -0.02919,
+      "bowling": 0.984602
+    },
+    "nj maddinson": {
+      "batting": 0.060847,
+      "bowling": 0.0
+    },
+    "jds neesham": {
+      "batting": 0.24767,
+      "bowling": 0.193376
+    },
+    "ar patel": {
+      "batting": 1.018275,
+      "bowling": 0.809829
+    },
+    "br dunk": {
+      "batting": 0.669312,
+      "bowling": 0.0
+    },
+    "rr rossouw": {
+      "batting": 1.614087,
+      "bowling": 0.0
+    },
+    "r tewatia": {
+      "batting": 1.013851,
+      "bowling": 0.5429
+    },
+    "shivam sharma": {
+      "batting": 0.722222,
+      "bowling": 0.734375
+    },
+    "imran tahir": {
+      "batting": -0.155968,
+      "bowling": 1.217083
+    },
+    "lmp simmons": {
+      "batting": 2.15009,
+      "bowling": -0.0
+    },
+    "vh zol": {
+      "batting": 0.699786,
+      "bowling": 0.0
+    },
+    "v shankar": {
+      "batting": 1.262409,
+      "bowling": -0.00085
+    },
+    "bcj cutting": {
+      "batting": 1.387707,
+      "bowling": 0.20016
+    },
+    "k santokie": {
+      "batting": 0.0,
+      "bowling": 0.4375
+    },
+    "s gopal": {
+      "batting": 0.285906,
+      "bowling": 0.780626
+    },
+    "be hendricks": {
+      "batting": -1.055556,
+      "bowling": 0.721429
+    },
+    "pj cummins": {
+      "batting": 1.111318,
+      "bowling": 0.669148
+    },
+    "jw hastings": {
+      "batting": 0.0,
+      "bowling": 1.126437
+    },
+    "karanveer singh": {
+      "batting": -0.45098,
+      "bowling": 0.750817
+    },
+    "dj muthuswami": {
+      "batting": -1.027778,
+      "bowling": 0.751984
+    },
+    "ss iyer": {
+      "batting": 1.756578,
+      "bowling": 0.25
+    },
+    "dj hooda": {
+      "batting": 0.900506,
+      "bowling": 0.113248
+    },
+    "ta boult": {
+      "batting": -0.013708,
+      "bowling": 0.890772
+    },
+    "ks williamson": {
+      "batting": 1.614165,
+      "bowling": -0.583333
+    },
+    "sa abbott": {
+      "batting": 0.435185,
+      "bowling": -0.611111
+    },
+    "kc cariappa": {
+      "batting": 0.195238,
+      "bowling": 0.189394
+    },
+    "j suchith": {
+      "batting": 0.161616,
+      "bowling": 0.590909
+    },
+    "d wiese": {
+      "batting": 1.102509,
+      "bowling": 0.740984
+    },
+    "hh pandya": {
+      "batting": 1.438741,
+      "bowling": 0.290369
+    },
+    "mj mcclenaghan": {
+      "batting": 0.267353,
+      "bowling": 0.972158
+    },
+    "sn khan": {
+      "batting": 1.130558,
+      "bowling": 0.5
+    },
+    "rg more": {
+      "batting": -0.138889,
+      "bowling": -0.111905
+    },
+    "sn thakur": {
+      "batting": 0.685595,
+      "bowling": 0.508071
+    },
+    "gs sandhu": {
+      "batting": 0.0,
+      "bowling": -0.145833
+    },
+    "j yadav": {
+      "batting": 0.444444,
+      "bowling": 0.620408
+    },
+    "bb sran": {
+      "batting": -0.527778,
+      "bowling": 0.317779
+    },
+    "jc buttler": {
+      "batting": 2.311125,
+      "bowling": 0.0
+    },
+    "m ashwin": {
+      "batting": -0.462963,
+      "bowling": 0.681816
+    },
+    "c munro": {
+      "batting": 0.963088,
+      "bowling": 0.125
+    },
+    "cr brathwaite": {
+      "batting": 1.256542,
+      "bowling": 0.438894
+    },
+    "mp stoinis": {
+      "batting": 1.422523,
+      "bowling": 0.043103
+    },
+    "p sahu": {
+      "batting": 0.854701,
+      "bowling": 0.414286
+    },
+    "ishan kishan": {
+      "batting": 1.683413,
+      "bowling": 1.0
+    },
+    "mustafizur rahman": {
+      "batting": -0.719742,
+      "bowling": 0.86942
+    },
+    "af milne": {
+      "batting": -0.295658,
+      "bowling": 0.213768
+    },
+    "kuldeep yadav": {
+      "batting": -0.15908,
+      "bowling": 0.876462
+    },
+    "kh pandya": {
+      "batting": 1.005379,
+      "bowling": 0.677349
+    },
+    "ad nath": {
+      "batting": 0.147959,
+      "bowling": 0.0
+    },
+    "kj abbott": {
+      "batting": 0.771991,
+      "bowling": -0.432292
+    },
+    "mj guptill": {
+      "batting": 1.403529,
+      "bowling": 0.0
+    },
+    "tm head": {
+      "batting": 2.304853,
+      "bowling": -0.644636
+    },
+    "t shamsi": {
+      "batting": -0.763889,
+      "bowling": 0.2375
+    },
+    "ns naik": {
+      "batting": -0.173203,
+      "bowling": 0.0
+    },
+    "rr pant": {
+      "batting": 1.968417,
+      "bowling": 0.0
+    },
+    "s kaushik": {
+      "batting": -1.5,
+      "bowling": 0.316176
+    },
+    "sw billings": {
+      "batting": 1.155469,
+      "bowling": 0.0
+    },
+    "psp handscomb": {
+      "batting": -0.541667,
+      "bowling": 0.0
+    },
+    "sm boland": {
+      "batting": 0.0,
+      "bowling": 0.904762
+    },
+    "swapnil singh": {
+      "batting": 0.231481,
+      "bowling": 0.185185
+    },
+    "ut khawaja": {
+      "batting": 1.263426,
+      "bowling": 0.0
+    },
+    "cj jordan": {
+      "batting": 0.1,
+      "bowling": 0.402173
+    },
+    "a zampa": {
+      "batting": -0.552083,
+      "bowling": 1.162259
+    },
+    "hm amla": {
+      "batting": 2.275585,
+      "bowling": 0.0
+    },
+    "f behardien": {
+      "batting": 0.105413,
+      "bowling": 0.0
+    },
+    "n rana": {
+      "batting": 1.582047,
+      "bowling": 0.22043
+    },
+    "dl chahar": {
+      "batting": 0.629489,
+      "bowling": 0.737582
+    },
+    "er dwivedi": {
+      "batting": 1.309524,
+      "bowling": 0.0
+    },
+    "ts mills": {
+      "batting": -0.696825,
+      "bowling": 0.454944
+    },
+    "a choudhary": {
+      "batting": 0.525463,
+      "bowling": 0.694719
+    },
+    "rashid khan": {
+      "batting": 1.017062,
+      "bowling": 1.212766
+    },
+    "ba stokes": {
+      "batting": 1.382437,
+      "bowling": 0.454383
+    },
+    "jj roy": {
+      "batting": 1.856844,
+      "bowling": 0.0
+    },
+    "cr woakes": {
+      "batting": 0.127345,
+      "bowling": 0.947294
+    },
+    "t natarajan": {
+      "batting": -0.666667,
+      "bowling": 0.681186
+    },
+    "rd chahar": {
+      "batting": 0.126161,
+      "bowling": 0.837254
+    },
+    "vishnu vinod": {
+      "batting": 0.246589,
+      "bowling": 0.0
+    },
+    "b stanlake": {
+      "batting": 1.902778,
+      "bowling": 0.888889
+    },
+    "basil thampi": {
+      "batting": -0.012545,
+      "bowling": 0.239725
+    },
+    "tejas baroka": {
+      "batting": 0.0,
+      "bowling": -0.357143
+    },
+    "ra tripathi": {
+      "batting": 1.521326,
+      "bowling": -1.0
+    },
+    "c de grandhomme": {
+      "batting": 0.984921,
+      "bowling": 0.04788
+    },
+    "aj tye": {
+      "batting": 0.094618,
+      "bowling": 1.060879
+    },
+    "lh ferguson": {
+      "batting": 0.914894,
+      "bowling": 0.561026
+    },
+    "mohammad nabi": {
+      "batting": 0.837132,
+      "bowling": 0.648624
+    },
+    "mohammed siraj": {
+      "batting": -0.065492,
+      "bowling": 0.631638
+    },
+    "k rabada": {
+      "batting": 0.297491,
+      "bowling": 1.01494
+    },
+    "washington sundar": {
+      "batting": 0.82553,
+      "bowling": 0.549777
+    },
+    "ss agarwal": {
+      "batting": 0.0,
+      "bowling": 0.208333
+    },
+    "nb singh": {
+      "batting": 0.0,
+      "bowling": 1.479167
+    },
+    "dm bravo": {
+      "batting": 0.333333,
+      "bowling": 0.0
+    },
+    "ankit soni": {
+      "batting": -1.5,
+      "bowling": -0.092157
+    },
+    "ar bawne": {
+      "batting": 0.416667,
+      "bowling": 0.0
+    },
+    "sp jackson": {
+      "batting": 0.26133,
+      "bowling": 0.0
+    },
+    "mj henry": {
+      "batting": -0.430556,
+      "bowling": -0.509259
+    },
+    "avesh khan": {
+      "batting": 0.859552,
+      "bowling": 0.673591
+    },
+    "e lewis": {
+      "batting": 1.684126,
+      "bowling": 0.0
+    },
+    "ma wood": {
+      "batting": 0.597222,
+      "bowling": 1.595833
+    },
+    "m markande": {
+      "batting": 0.195238,
+      "bowling": 0.544663
+    },
+    "mujeeb ur rahman": {
+      "batting": -0.388889,
+      "bowling": 0.748132
+    },
+    "k khejroliya": {
+      "batting": 0.0,
+      "bowling": 0.131579
+    },
+    "rk singh": {
+      "batting": 1.539896,
+      "bowling": 0.0
+    },
+    "djm short": {
+      "batting": 0.864719,
+      "bowling": 0.833333
+    },
+    "k gowtham": {
+      "batting": 1.158711,
+      "bowling": 0.469493
+    },
+    "tk curran": {
+      "batting": 0.6892,
+      "bowling": 0.123249
+    },
+    "a dananjaya": {
+      "batting": -0.277778,
+      "bowling": -0.9375
+    },
+    "shubman gill": {
+      "batting": 2.163736,
+      "bowling": 0.0
+    },
+    "shivam mavi": {
+      "batting": -0.104031,
+      "bowling": 0.621091
+    },
+    "h klaasen": {
+      "batting": 2.515217,
+      "bowling": 0.0
+    },
+    "rk bhui": {
+      "batting": -0.880342,
+      "bowling": 0.0
+    },
+    "jc archer": {
+      "batting": 0.797715,
+      "bowling": 0.959419
+    },
+    "le plunkett": {
+      "batting": -1.055556,
+      "bowling": 0.22619
+    },
+    "pp shaw": {
+      "batting": 1.606199,
+      "bowling": 0.0
+    },
+    "ad hales": {
+      "batting": 1.438167,
+      "bowling": 0.0
+    },
+    "is sodhi": {
+      "batting": -0.79085,
+      "bowling": 1.263467
+    },
+    "mk lomror": {
+      "batting": 1.102594,
+      "bowling": -0.040909
+    },
+    "l ngidi": {
+      "batting": -1.5,
+      "bowling": 1.407518
+    },
+    "km asif": {
+      "batting": -1.5,
+      "bowling": 0.22807
+    },
+    "dj willey": {
+      "batting": 0.157437,
+      "bowling": 0.565657
+    },
+    "dr shorey": {
+      "batting": -0.183007,
+      "bowling": 0.0
+    },
+    "m prasidh krishna": {
+      "batting": -0.959821,
+      "bowling": 0.767722
+    },
+    "mm ali": {
+      "batting": 1.345876,
+      "bowling": 0.744213
+    },
+    "p chopra": {
+      "batting": 0.611111,
+      "bowling": 0.0
+    },
+    "jpr scantlebury-searles": {
+      "batting": 0.388889,
+      "bowling": -0.623016
+    },
+    "abhishek sharma": {
+      "batting": 1.931797,
+      "bowling": 0.036608
+    },
+    "s lamichhane": {
+      "batting": -1.5,
+      "bowling": 1.129032
+    },
+    "cj dala": {
+      "batting": 0.0,
+      "bowling": -0.833333
+    },
+    "kk ahmed": {
+      "batting": -1.203704,
+      "bowling": 0.770243
+    },
+    "so hetmyer": {
+      "batting": 1.486997,
+      "bowling": 0.0
+    },
+    "s dube": {
+      "batting": 1.660918,
+      "bowling": -0.367647
+    },
+    "navdeep saini": {
+      "batting": -0.048611,
+      "bowling": 0.505887
+    },
+    "jm bairstow": {
+      "batting": 2.09596,
+      "bowling": 0.0
+    },
+    "rasikh salam": {
+      "batting": 0.12037,
+      "bowling": -0.014819
+    },
+    "kma paul": {
+      "batting": -0.3625,
+      "bowling": 0.756518
+    },
+    "n pooran": {
+      "batting": 2.109226,
+      "bowling": 0.0
+    },
+    "sm curran": {
+      "batting": 1.24993,
+      "bowling": 0.346664
+    },
+    "cv varun": {
+      "batting": -0.702546,
+      "bowling": 1.070556
+    },
+    "gc viljoen": {
+      "batting": -0.90873,
+      "bowling": 0.559179
+    },
+    "p ray barman": {
+      "batting": 0.545139,
+      "bowling": -1.5
+    },
+    "mj santner": {
+      "batting": 0.223077,
+      "bowling": 0.848581
+    },
+    "jp behrendorff": {
+      "batting": -0.5,
+      "bowling": 0.669077
+    },
+    "sc kuggeleijn": {
+      "batting": 0.0,
+      "bowling": 0.614583
+    },
+    "as joseph": {
+      "batting": -0.145312,
+      "bowling": 0.407206
+    },
+    "hf gurney": {
+      "batting": -1.194444,
+      "bowling": 0.525463
+    },
+    "s midhun": {
+      "batting": 0.0,
+      "bowling": -1.375
+    },
+    "sd lad": {
+      "batting": 0.775641,
+      "bowling": 0.0
+    },
+    "r parag": {
+      "batting": 1.49011,
+      "bowling": -0.248678
+    },
+    "jl denly": {
+      "batting": -1.5,
+      "bowling": 0.0
+    },
+    "ls livingstone": {
+      "batting": 1.697715,
+      "bowling": 0.146427
+    },
+    "arshdeep singh": {
+      "batting": -0.52513,
+      "bowling": 0.713727
+    },
+    "aj turner": {
+      "batting": -0.206349,
+      "bowling": 0.0
+    },
+    "se rutherford": {
+      "batting": 1.334039,
+      "bowling": -0.019648
+    },
+    "harpreet brar": {
+      "batting": 0.523831,
+      "bowling": 0.627276
+    },
+    "y prithvi raj": {
+      "batting": -1.5,
+      "bowling": -0.433333
+    },
+    "o thomas": {
+      "batting": 0.0,
+      "bowling": 0.805556
+    },
+    "as roy": {
+      "batting": -0.115741,
+      "bowling": 0.399519
+    },
+    "s sandeep warrier": {
+      "batting": 0.0,
+      "bowling": 0.407738
+    },
+    "p simran singh": {
+      "batting": 1.766026,
+      "bowling": 0.0
+    },
+    "jl pattinson": {
+      "batting": 0.358974,
+      "bowling": 0.883598
+    },
+    "d padikkal": {
+      "batting": 1.491592,
+      "bowling": 0.0
+    },
+    "jr philippe": {
+      "batting": 0.6329,
+      "bowling": 0.0
+    },
+    "pk garg": {
+      "batting": 0.767213,
+      "bowling": 0.0
+    },
+    "ybk jaiswal": {
+      "batting": 2.291527,
+      "bowling": 0.5
+    },
+    "rd gaikwad": {
+      "batting": 2.148001,
+      "bowling": 0.0
+    },
+    "ss cottrell": {
+      "batting": -1.5,
+      "bowling": 0.291667
+    },
+    "ravi bishnoi": {
+      "batting": -0.491477,
+      "bowling": 0.757319
+    },
+    "jr hazlewood": {
+      "batting": -0.530241,
+      "bowling": 1.148745
+    },
+    "a nortje": {
+      "batting": -0.129949,
+      "bowling": 0.783024
+    },
+    "kl nagarkoti": {
+      "batting": -0.492063,
+      "bowling": 0.003788
+    },
+    "abdul samad": {
+      "batting": 1.209904,
+      "bowling": -1.051378
+    },
+    "i udana": {
+      "batting": 0.412879,
+      "bowling": 0.185556
+    },
+    "kartik tyagi": {
+      "batting": -0.285714,
+      "bowling": 0.077982
+    },
+    "n jagadeesan": {
+      "batting": 0.777551,
+      "bowling": 0.0
+    },
+    "at carey": {
+      "batting": 0.471903,
+      "bowling": 0.0
+    },
+    "t banton": {
+      "batting": 0.125,
+      "bowling": 0.0
+    },
+    "tu deshpande": {
+      "batting": 0.285354,
+      "bowling": 0.493101
+    },
+    "cj green": {
+      "batting": 0.0,
+      "bowling": -0.117647
+    },
+    "shahbaz ahmed": {
+      "batting": 0.806341,
+      "bowling": -0.013065
+    },
+    "dr sams": {
+      "batting": -0.061966,
+      "bowling": 0.55
+    },
+    "monu kumar": {
+      "batting": 0.0,
+      "bowling": -0.5
+    },
+    "p dubey": {
+      "batting": 0.010101,
+      "bowling": 0.198718
+    },
+    "ka jamieson": {
+      "batting": 0.255401,
+      "bowling": 0.478831
+    },
+    "m jansen": {
+      "batting": 0.300379,
+      "bowling": 0.545436
+    },
+    "rm patidar": {
+      "batting": 2.13347,
+      "bowling": 0.0
+    },
+    "c sakariya": {
+      "batting": -0.534818,
+      "bowling": 0.768038
+    },
+    "m shahrukh khan": {
+      "batting": 1.193772,
+      "bowling": -0.055556
+    },
+    "ja richardson": {
+      "batting": -0.367877,
+      "bowling": 0.008333
+    },
+    "rp meredith": {
+      "batting": -1.5,
+      "bowling": 0.51365
+    },
+    "lalit yadav": {
+      "batting": 0.621533,
+      "bowling": 0.225055
+    },
+    "virat singh": {
+      "batting": 0.256944,
+      "bowling": 0.0
+    },
+    "li meriwala": {
+      "batting": 0.0,
+      "bowling": 0.166667
+    },
+    "jalaj s saxena": {
+      "batting": 0.0,
+      "bowling": -0.25
+    },
+    "fa allen": {
+      "batting": -0.319688,
+      "bowling": 0.15
+    },
+    "dj malan": {
+      "batting": 1.194444,
+      "bowling": 0.0
+    },
+    "anmolpreet singh": {
+      "batting": 0.868894,
+      "bowling": 0.0
+    },
+    "ks bharat": {
+      "batting": 1.408018,
+      "bowling": 0.0
+    },
+    "pwh de silva": {
+      "batting": -0.11259,
+      "bowling": 0.946705
+    },
+    "vr iyer": {
+      "batting": 1.672907,
+      "bowling": -0.37037
+    },
+    "ic porel": {
+      "batting": 0.0,
+      "bowling": 0.395833
+    },
+    "au rashid": {
+      "batting": 0.829861,
+      "bowling": 0.280556
+    },
+    "ak markram": {
+      "batting": 1.656546,
+      "bowling": 0.01943
+    },
+    "th david": {
+      "batting": 1.853137,
+      "bowling": 0.0
+    },
+    "nt ellis": {
+      "batting": -0.338889,
+      "bowling": 0.764706
+    },
+    "ghs garton": {
+      "batting": -0.819444,
+      "bowling": 0.25
+    },
+    "tl seifert": {
+      "batting": 0.394525,
+      "bowling": 0.0
+    },
+    "akash singh": {
+      "batting": 0.0,
+      "bowling": 0.364634
+    },
+    "gd phillips": {
+      "batting": 0.613933,
+      "bowling": 0.416667
+    },
+    "umran malik": {
+      "batting": 0.552431,
+      "bowling": 0.580603
+    },
+    "rv patel": {
+      "batting": 0.504784,
+      "bowling": 0.166667
+    },
+    "k yadav": {
+      "batting": -1.5,
+      "bowling": 0.222222
+    },
+    "anuj rawat": {
+      "batting": 0.830034,
+      "bowling": 0.0
+    },
+    "dp conway": {
+      "batting": 2.3893,
+      "bowling": 0.0
+    },
+    "tilak varma": {
+      "batting": 1.878147,
+      "bowling": 0.090909
+    },
+    "r powell": {
+      "batting": 1.213972,
+      "bowling": -0.5
+    },
+    "of smith": {
+      "batting": 0.421086,
+      "bowling": -0.133333
+    },
+    "akash deep": {
+      "batting": 1.009921,
+      "bowling": -0.361596
+    },
+    "pbb rajapaksa": {
+      "batting": 1.496588,
+      "bowling": 0.0
+    },
+    "ra bawa": {
+      "batting": 0.171296,
+      "bowling": 0.0
+    },
+    "a badoni": {
+      "batting": 1.281555,
+      "bowling": 0.37619
+    },
+    "pvd chameera": {
+      "batting": 0.371825,
+      "bowling": 0.1704
+    },
+    "mohsin khan": {
+      "batting": -0.018519,
+      "bowling": 0.889869
+    },
+    "a manohar": {
+      "batting": 0.864303,
+      "bowling": 0.0
+    },
+    "r shepherd": {
+      "batting": 2.014527,
+      "bowling": -0.368995
+    },
+    "d pretorius": {
+      "batting": 0.953175,
+      "bowling": 0.334286
+    },
+    "mukesh choudhary": {
+      "batting": -0.083333,
+      "bowling": 0.399702
+    },
+    "jm sharma": {
+      "batting": 1.607038,
+      "bowling": 0.0
+    },
+    "vg arora": {
+      "batting": -0.963675,
+      "bowling": 0.484948
+    },
+    "d brevis": {
+      "batting": 1.994844,
+      "bowling": 0.833333
+    },
+    "dg nalkande": {
+      "batting": 0.083333,
+      "bowling": 0.190476
+    },
+    "b sai sudharsan": {
+      "batting": 2.774097,
+      "bowling": 0.0
+    },
+    "m theekshana": {
+      "batting": -0.717593,
+      "bowling": 0.716787
+    },
+    "ramandeep singh": {
+      "batting": 1.008333,
+      "bowling": 0.8875
+    },
+    "he van der dussen": {
+      "batting": 0.053241,
+      "bowling": 0.0
+    },
+    "kr sen": {
+      "batting": -1.5,
+      "bowling": 0.563509
+    },
+    "ss prabhudessai": {
+      "batting": 0.685849,
+      "bowling": 0.0
+    },
+    "yash dayal": {
+      "batting": -0.888889,
+      "bowling": 0.400773
+    },
+    "shashank singh": {
+      "batting": 1.729108,
+      "bowling": -0.391667
+    },
+    "aman hakim khan": {
+      "batting": 0.5211,
+      "bowling": -1.25
+    },
+    "oc mccoy": {
+      "batting": 0.944444,
+      "bowling": 0.816641
+    },
+    "hr shokeen": {
+      "batting": 0.502564,
+      "bowling": 0.011689
+    },
+    "dj mitchell": {
+      "batting": 1.443258,
+      "bowling": -0.822917
+    },
+    "b indrajith": {
+      "batting": -0.236111,
+      "bowling": 0.0
+    },
+    "harshit rana": {
+      "batting": 0.144742,
+      "bowling": 0.715771
+    },
+    "k kartikeya": {
+      "batting": -0.45098,
+      "bowling": 0.460106
+    },
+    "simarjeet singh": {
+      "batting": -0.574074,
+      "bowling": 0.154762
+    },
+    "fazalhaq farooqi": {
+      "batting": -0.990741,
+      "bowling": -0.164042
+    },
+    "ks sharma": {
+      "batting": -0.333333,
+      "bowling": 0.0
+    },
+    "r sai kishore": {
+      "batting": 0.15625,
+      "bowling": 0.852381
+    },
+    "t stubbs": {
+      "batting": 1.737679,
+      "bowling": -0.016667
+    },
+    "ph solanki": {
+      "batting": 0.0,
+      "bowling": 1.25
+    },
+    "m pathirana": {
+      "batting": 0.0,
+      "bowling": 1.02346
+    },
+    "r sanjay yadav": {
+      "batting": -1.5,
+      "bowling": -0.875
+    },
+    "a tomar": {
+      "batting": -0.652778,
+      "bowling": 0.0
+    },
+    "pn mankad": {
+      "batting": 1.238737,
+      "bowling": 0.0
+    },
+    "j little": {
+      "batting": 0.0,
+      "bowling": 0.60307
+    },
+    "rs hangargekar": {
+      "batting": 0.0,
+      "bowling": 0.75
+    },
+    "sikandar raza": {
+      "batting": 1.296251,
+      "bowling": -0.160714
+    },
+    "rahmanullah gurbaz": {
+      "batting": 1.384134,
+      "bowling": 0.0
+    },
+    "kr mayers": {
+      "batting": 2.04449,
+      "bowling": -0.107143
+    },
+    "mukesh kumar": {
+      "batting": -0.694444,
+      "bowling": 0.394109
+    },
+    "hc brook": {
+      "batting": 1.001804,
+      "bowling": 0.0
+    },
+    "na saini": {
+      "batting": 0.0,
+      "bowling": -2.25
+    },
+    "rjw topley": {
+      "batting": -0.708333,
+      "bowling": -0.080556
+    },
+    "c green": {
+      "batting": 1.771614,
+      "bowling": 0.190977
+    },
+    "mg bracewell": {
+      "batting": 0.848109,
+      "bowling": 0.840909
+    },
+    "n wadhera": {
+      "batting": 1.498732,
+      "bowling": 0.058824
+    },
+    "arshad khan": {
+      "batting": 0.931944,
+      "bowling": -0.311752
+    },
+    "yash thakur": {
+      "batting": 0.0,
+      "bowling": 0.38484
+    },
+    "abishek porel": {
+      "batting": 1.659042,
+      "bowling": 0.0
+    },
+    "dhruv jurel": {
+      "batting": 1.579218,
+      "bowling": 0.0
+    },
+    "suyash sharma": {
+      "batting": 0.0,
+      "bowling": 0.417213
+    },
+    "ssb magala": {
+      "batting": 0.0,
+      "bowling": 0.291667
+    },
+    "mw short": {
+      "batting": 0.94697,
+      "bowling": 0.44
+    },
+    "mohit rathee": {
+      "batting": -0.819444,
+      "bowling": -1.625
+    },
+    "yv dhull": {
+      "batting": -0.334138,
+      "bowling": 0.0
+    },
+    "vijaykumar vyshak": {
+      "batting": 0.152778,
+      "bowling": 0.467337
+    },
+    "yudhvir singh": {
+      "batting": 0.524306,
+      "bowling": -0.009259
+    },
+    "atharva taide": {
+      "batting": 1.780603,
+      "bowling": 1.0
+    },
+    "arjun tendulkar": {
+      "batting": 1.027778,
+      "bowling": 0.157534
+    },
+    "d jansen": {
+      "batting": 0.0,
+      "bowling": -0.479167
+    },
+    "noor ahmad": {
+      "batting": -0.678953,
+      "bowling": 0.926056
+    },
+    "naveen-ul-haq": {
+      "batting": -0.35,
+      "bowling": 0.934793
+    },
+    "liton das": {
+      "batting": -0.027778,
+      "bowling": 0.0
+    },
+    "pd salt": {
+      "batting": 2.387728,
+      "bowling": 0.0
+    },
+    "mayank dagar": {
+      "batting": -1.5,
+      "bowling": -0.014294
+    },
+    "abdul basith": {
+      "batting": -0.194444,
+      "bowling": 0.0
+    },
+    "gurnoor brar": {
+      "batting": 0.0,
+      "bowling": -1.5
+    },
+    "aj hosein": {
+      "batting": 1.388889,
+      "bowling": 0.333333
+    },
+    "akash madhwal": {
+      "batting": -0.563492,
+      "bowling": 0.613246
+    },
+    "r goyal": {
+      "batting": 0.0,
+      "bowling": -0.0625
+    },
+    "vivrant sharma": {
+      "batting": 4.16844,
+      "bowling": -1.083333
+    },
+    "je root": {
+      "batting": -0.111111,
+      "bowling": 0.25
+    },
+    "md shanaka": {
+      "batting": 0.231481,
+      "bowling": 0.0
+    },
+    "sanvir singh": {
+      "batting": 0.265873,
+      "bowling": 0.0
+    },
+    "nithish kumar reddy": {
+      "batting": 1.487957,
+      "bowling": -0.309336
+    },
+    "h sharma": {
+      "batting": 0.0,
+      "bowling": -0.85
+    },
+    "r ravindra": {
+      "batting": 1.573472,
+      "bowling": 1.125
+    },
+    "sd hope": {
+      "batting": 1.50463,
+      "bowling": 0.0
+    },
+    "sumit kumar": {
+      "batting": -0.229167,
+      "bowling": -0.85
+    },
+    "n burger": {
+      "batting": 0.0,
+      "bowling": 1.125
+    },
+    "l wood": {
+      "batting": 2.75,
+      "bowling": -1.458333
+    },
+    "sz mulani": {
+      "batting": -0.194444,
+      "bowling": -0.85
+    },
+    "azmatullah omarzai": {
+      "batting": 0.783408,
+      "bowling": 0.244792
+    },
+    "naman dhir": {
+      "batting": 1.859684,
+      "bowling": -0.192308
+    },
+    "g coetzee": {
+      "batting": -0.079726,
+      "bowling": 0.299451
+    },
+    "sh johnson": {
+      "batting": -0.50202,
+      "bowling": -0.134598
+    },
+    "sameer rizvi": {
+      "batting": 1.914865,
+      "bowling": 0.0
+    },
+    "kt maphaka": {
+      "batting": 3.944444,
+      "bowling": -0.833333
+    },
+    "m siddharth": {
+      "batting": 0.0,
+      "bowling": 0.468056
+    },
+    "mp yadav": {
+      "batting": 0.0,
+      "bowling": 0.956612
+    },
+    "sb dubey": {
+      "batting": 1.246138,
+      "bowling": 0.0
+    },
+    "a raghuvanshi": {
+      "batting": 1.943915,
+      "bowling": 0.0
+    },
+    "ashutosh sharma": {
+      "batting": 1.745262,
+      "bowling": 0.0
+    },
+    "saurav chauhan": {
+      "batting": 0.333333,
+      "bowling": 0.0
+    },
+    "kumar kushagra": {
+      "batting": 0.041667,
+      "bowling": 0.0
+    },
+    "br sharath": {
+      "batting": -0.888889,
+      "bowling": 0.0
+    },
+    "ka maharaj": {
+      "batting": -0.819444,
+      "bowling": 1.208333
+    },
+    "wg jacks": {
+      "batting": 1.763867,
+      "bowling": 0.121516
+    },
+    "j fraser-mcgurk": {
+      "batting": 2.505432,
+      "bowling": 0.0
+    },
+    "tanush kotian": {
+      "batting": 0.801075,
+      "bowling": 0.0
+    },
+    "arshad khan (2)": {
+      "batting": 0.340278,
+      "bowling": -1.0
+    },
+    "s joseph": {
+      "batting": 0.0,
+      "bowling": -0.9375
+    },
+    "n thushara": {
+      "batting": 0.0,
+      "bowling": 0.579167
+    },
+    "lb williams": {
+      "batting": -0.819444,
+      "bowling": -0.583333
+    },
+    "aa kulkarni": {
+      "batting": 0.15625,
+      "bowling": 0.0
+    },
+    "rj gleeson": {
+      "batting": -0.138889,
+      "bowling": 0.129085
+    },
+    "mj suthar": {
+      "batting": -0.819444,
+      "bowling": -1.25
+    },
+    "a kamboj": {
+      "batting": 0.25,
+      "bowling": 0.473885
+    },
+    "gulbadin naib": {
+      "batting": 1.138889,
+      "bowling": -1.0
+    },
+    "d ferreira": {
+      "batting": -0.625817,
+      "bowling": 0.0
+    },
+    "v viyaskanth": {
+      "batting": 0.638889,
+      "bowling": 0.127778
+    },
+    "v kaverappa": {
+      "batting": 0.0,
+      "bowling": 1.416667
+    },
+    "t kohler-cadmore": {
+      "batting": 0.5,
+      "bowling": 0.0
+    },
+    "shivam singh": {
+      "batting": -0.555556,
+      "bowling": 0.0
+    },
+    "aniket verma": {
+      "batting": 1.630243,
+      "bowling": 0.0
+    },
+    "rd rickelton": {
+      "batting": 2.016807,
+      "bowling": 0.0
+    },
+    "r minz": {
+      "batting": -0.833333,
+      "bowling": 0.0
+    },
+    "pvsn raju": {
+      "batting": -0.194444,
+      "bowling": -0.895833
+    },
+    "v puthur": {
+      "batting": 0.0,
+      "bowling": 0.729167
+    },
+    "v nigam": {
+      "batting": 1.908213,
+      "bowling": 0.352713
+    },
+    "ds rathi": {
+      "batting": -1.027778,
+      "bowling": 0.772321
+    },
+    "prince yadav": {
+      "batting": -0.736111,
+      "bowling": 0.391178
+    },
+    "priyansh arya": {
+      "batting": 2.164138,
+      "bowling": 0.0
+    },
+    "pwa mulder": {
+      "batting": 0.022727,
+      "bowling": -2.0
+    },
+    "zeeshan ansari": {
+      "batting": 0.0,
+      "bowling": 0.098799
+    },
+    "j overton": {
+      "batting": 1.832156,
+      "bowling": -1.308333
+    },
+    "ashwani kumar": {
+      "batting": 0.0,
+      "bowling": 0.480256
+    },
+    "phkd mendis": {
+      "batting": 1.188889,
+      "bowling": 0.27381
+    },
+    "suryansh shedge": {
+      "batting": -0.574916,
+      "bowling": -1.333333
+    },
+    "e malinga": {
+      "batting": 0.0,
+      "bowling": 1.032911
+    },
+    "sk rasheed": {
+      "batting": 0.697619,
+      "bowling": 0.0
+    },
+    "jp inglis": {
+      "batting": 2.006061,
+      "bowling": 0.0
+    },
+    "xc bartlett": {
+      "batting": 0.486111,
+      "bowling": -0.083333
+    },
+    "ms bhandage": {
+      "batting": -1.131944,
+      "bowling": 0.0
+    },
+    "v suryavanshi": {
+      "batting": 3.311696,
+      "bowling": 0.0
+    },
+    "a mhatre": {
+      "batting": 2.500192,
+      "bowling": 0.0
+    },
+    "c bosch": {
+      "batting": 1.587963,
+      "bowling": 0.24408
+    },
+    "jg bethell": {
+      "batting": 2.508547,
+      "bowling": 0.0
+    },
+    "karim janat": {
+      "batting": 0.0,
+      "bowling": -5.5
+    },
+    "ks rathore": {
+      "batting": -1.5,
+      "bowling": 0.0
+    },
+    "urvil patel": {
+      "batting": 2.415509,
+      "bowling": 0.0
+    },
+    "mj owen": {
+      "batting": -1.5,
+      "bowling": 0.0
+    },
+    "harsh dubey": {
+      "batting": 0.865079,
+      "bowling": 1.039474
+    },
+    "w o'rourke": {
+      "batting": 0.0,
+      "bowling": 0.473118
+    },
+    "m tiwari": {
+      "batting": -0.395833,
+      "bowling": 0.0
+    },
+    "sediqullah atal": {
+      "batting": 1.440972,
+      "bowling": 0.0
+    },
+    "mp breetzke": {
+      "batting": 0.736111,
+      "bowling": 0.0
+    },
+    "musheer khan": {
+      "batting": -1.5,
+      "bowling": -0.541667
+    },
+    "bkg mendis": {
+      "batting": 2.111111,
+      "bowling": 0.0
+    },
+    "ja duffy": {
+      "batting": 0.0,
+      "bowling": 1.583333
+    },
+    "abhinandan singh": {
+      "batting": 0.0,
+      "bowling": 0.7
+    },
+    "s arora": {
+      "batting": 0.357143,
+      "bowling": 0.0
+    },
+    "da payne": {
+      "batting": 0.333333,
+      "bowling": -0.666667
+    },
+    "fh allen": {
+      "batting": 3.690972,
+      "bowling": 0.0
+    },
+    "am ghazanfar": {
+      "batting": 0.0,
+      "bowling": -0.166667
+    },
+    "b muzarabani": {
+      "batting": 0.0,
+      "bowling": 0.988095
+    },
+    "brijesh sharma": {
+      "batting": 0.0,
+      "bowling": 1.416667
+    },
+    "kartik sharma": {
+      "batting": 0.451058,
+      "bowling": 0.0
+    },
+    "c connolly": {
+      "batting": 3.545455,
+      "bowling": 0.0
+    },
+    "ashok sharma": {
+      "batting": -1.5,
+      "bowling": -0.269444
+    },
+    "md choudhary": {
+      "batting": 0.194444,
+      "bowling": 0.0
+    },
+    "p nissanka": {
+      "batting": 1.914626,
+      "bowling": 0.0
+    },
+    "shivang kumar": {
+      "batting": 0.625,
+      "bowling": 0.197917
+    },
+    "pr veer": {
+      "batting": 1.5625,
+      "bowling": 0.0
     }
   },
   "head_to_head": {

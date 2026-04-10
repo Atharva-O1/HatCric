@@ -411,6 +411,16 @@
             </div>
         </section>
 
+        <section class="w-full section-wrap p-8" id="explanation-section">
+            <div class="flex items-center justify-between mb-4">
+                <span class="hc-label">Why HatCric Favors This Team</span>
+                <span class="text-[10px] uppercase tracking-wide text-[#8eff71]/60 font-bold">Model Insight</span>
+            </div>
+            <p class="text-sm leading-7 hc-value-big max-w-4xl" id="prediction-explanation">
+                HatCric is waiting for enough match context to explain the edge.
+            </p>
+        </section>
+
         <section class="w-full grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div class="section-wrap p-8 xl:col-span-1" id="wickets-section">
                 <div class="flex items-center justify-between mb-5">
@@ -480,6 +490,7 @@
     const teamBProbEl = document.getElementById('team-b-prob');
     const barAEl = document.getElementById('bar-a');
     const barBEl = document.getElementById('bar-b');
+    const explanationEl = document.getElementById('prediction-explanation');
     const battersBody = document.getElementById('batters-body');
     const wicketDots = document.getElementById('wicket-dots');
 
@@ -830,6 +841,7 @@
         const target = Number(data.target || 0);
         const predictedScore = Number(data.predicted_score || 0);
         const predictionNote = data.prediction_note || '';
+        const predictionExplanation = data.prediction_explanation || '';
         const battingTeam = data.batting_team || null;
         const wickets = Number(data.wickets || 0);
         const { teamA, teamB } = resolveTeamNames(data);
@@ -882,6 +894,7 @@
         teamBProbEl.innerText = `${pB}%`;
         barAEl.style.width = `${pA}%`;
         barBEl.style.width = `${pB}%`;
+        explanationEl.innerText = predictionExplanation || `HatCric currently leans ${pA >= pB ? teamA : teamB} based on the available match context.`;
 
         toggleBattingSections(shouldShowBatting);
         lastRenderedWickets = wickets;
@@ -917,6 +930,7 @@
             );
             if (isFirstLoad) {
                 heroVal.innerText = '-';
+                explanationEl.innerText = 'HatCric could not load enough match context to explain the edge yet.';
                 toggleBattingSections(true);
                 lastRenderedWickets = 0;
                 lastRenderedBatters = getBatterFallback(matchSelector.value, 'Batter', 0, 0);
@@ -986,4 +1000,3 @@
 </script>
 </body>
 </html>
-

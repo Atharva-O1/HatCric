@@ -217,6 +217,41 @@ def _compute_lineup_strength(player_names: list[str], player_stats: dict[str, di
     }
 
 
+def _player_strengths_from_stats(player_stats: dict[str, dict[str, float]]) -> dict[str, dict[str, float]]:
+    strengths: dict[str, dict[str, float]] = {}
+    for player_name, stats in player_stats.items():
+        strengths[player_name] = {
+            "batting": round(_batting_rating(stats), 6),
+            "bowling": round(_bowling_rating(stats), 6),
+        }
+    return strengths
+
+
+def _compute_lineup_strength_from_priors(
+    player_names: list[str],
+    player_strengths: dict[str, dict[str, float]],
+) -> dict[str, float]:
+    if not player_names:
+        return {"batting": 0.0, "bowling": 0.0, "balance": 0.0}
+
+    batting_scores = []
+    bowling_scores = []
+    for player in player_names:
+        strengths = player_strengths.get(_normalize_player_name(player), {"batting": 0.0, "bowling": 0.0})
+        batting_scores.append(float(strengths.get("batting", 0.0)))
+        bowling_scores.append(float(strengths.get("bowling", 0.0)))
+
+    batting_scores.sort(reverse=True)
+    bowling_scores.sort(reverse=True)
+    batting_strength = sum(batting_scores[:7]) / max(1, min(7, len(batting_scores)))
+    bowling_strength = sum(bowling_scores[:5]) / max(1, min(5, len(bowling_scores)))
+    return {
+        "batting": batting_strength,
+        "bowling": bowling_strength,
+        "balance": batting_strength - bowling_strength,
+    }
+
+
 def _pair_key(team_a_code: str, team_b_code: str) -> tuple[str, str]:
     return tuple(sorted((team_a_code, team_b_code)))
 
@@ -333,8 +368,16 @@ def build_contextual_features(
         int(stats_b.get("balls_bowled", 0)),
     )
     venue_matches = int(venue_stats.get("matches", 0))
-    venue_chase_bias = 0.0
-    venue_scoring_bias = 0.0
+    venue_chase_bias = (
+        (float(venue_stats.get("chase_wins", 0)) / venue_matches) - 0.5
+        if venue_matches > 0 else 0.0
+    )
+    venue_avg_first_innings = (
+        float(venue_stats.get("first_innings_runs", 0)) / float(venue_stats.get("first_innings_count", 0))
+        if int(venue_stats.get("first_innings_count", 0)) > 0 else 0.0
+    )
+    venue_scoring_bias = (venue_avg_first_innings - 170.0) / 20.0 if venue_avg_first_innings else 0.0
+    venue_sample_strength = min(1.0, venue_matches / 10.0)
     batting_strength_diff = float(lineup_a.get("batting", 0.0)) - float(lineup_b.get("batting", 0.0))
     bowling_strength_diff = float(lineup_a.get("bowling", 0.0)) - float(lineup_b.get("bowling", 0.0))
     balance_diff = float(lineup_a.get("balance", 0.0)) - float(lineup_b.get("balance", 0.0))
@@ -356,6 +399,7 @@ def build_contextual_features(
         "balance_diff": balance_diff,
         "venue_chase_bias": venue_chase_bias,
         "venue_scoring_bias": venue_scoring_bias,
+        "venue_sample_strength": venue_sample_strength,
         "venue_record_diff": venue_record_diff,
         "head_to_head_diff": head_to_head_diff,
         "experience_diff": float(len(forms.get(team_a_code, [])) - len(forms.get(team_b_code, []))) / FORM_WINDOW,
@@ -368,6 +412,9 @@ def build_contextual_features(
         "season_nrr_x_form": season_nrr_diff * form_diff,
         "venue_chase_x_toss_decision": venue_chase_bias * float(toss_decision_sign),
         "venue_scoring_x_home": venue_scoring_bias * home_advantage,
+        "venue_scoring_x_form": venue_scoring_bias * season_form_diff,
+        "venue_chase_x_record": venue_chase_bias * venue_record_diff,
+        "venue_strength_x_home": venue_sample_strength * home_advantage,
         "batting_vs_bowling_edge": batting_strength_diff - bowling_strength_diff,
         "balance_x_home": balance_diff * home_advantage,
     }
@@ -453,6 +500,8 @@ def predict_match_probability(
     status: str = "",
     team_a_full: str = "",
     team_b_full: str = "",
+    team_a_lineup: list[str] | None = None,
+    team_b_lineup: list[str] | None = None,
     model: dict | None = None,
 ) -> dict[str, int]:
     loaded = model or load_model()
@@ -471,7 +520,15 @@ def predict_match_probability(
     season_stats = loaded.get("season_stats", {})
     season_venue_stats = loaded.get("season_venue_stats", {})
     team_lineup_strengths = loaded.get("team_lineup_strengths", {})
+    player_strengths = loaded.get("player_strengths", {})
     venue_history = loaded.get("venue_history", {})
+
+    if team_a_lineup:
+        team_lineup_strengths = dict(team_lineup_strengths)
+        team_lineup_strengths[team_a_code] = _compute_lineup_strength_from_priors(team_a_lineup, player_strengths)
+    if team_b_lineup:
+        team_lineup_strengths = dict(team_lineup_strengths)
+        team_lineup_strengths[team_b_code] = _compute_lineup_strength_from_priors(team_b_lineup, player_strengths)
 
     toss_sign, toss_decision_sign = infer_toss_context(status, team_a_code, team_b_code, team_a_full, team_b_full)
     rating_a = team_ratings.get(team_a_code, BASE_RATING)
@@ -762,9 +819,11 @@ def _select_blend_alpha_from_probs(
 def train_from_cricsheet_zip(
     zip_path: Path,
     output_path: Path | None = None,
-    epochs: int = 350,
+    epochs: int = 650,
     lr: float = 0.02,
-    l2: float = 6.0,
+    l2: float = 8.0,
+    depth: int = 7,
+    random_strength: float = 1.5,
 ) -> dict:
     with zipfile.ZipFile(zip_path) as zf:
         raw_matches = []
@@ -957,8 +1016,9 @@ def train_from_cricsheet_zip(
         catboost_model = CatBoostClassifier(
             iterations=epochs,
             learning_rate=lr,
-            depth=6,
+            depth=depth,
             l2_leaf_reg=l2,
+            random_strength=random_strength,
             loss_function="Logloss",
             eval_metric="Logloss",
             random_seed=42,
@@ -996,8 +1056,9 @@ def train_from_cricsheet_zip(
         final_model = CatBoostClassifier(
             iterations=best_iterations,
             learning_rate=lr,
-            depth=6,
+            depth=depth,
             l2_leaf_reg=l2,
+            random_strength=random_strength,
             loss_function="Logloss",
             eval_metric="Logloss",
             random_seed=42,
@@ -1031,6 +1092,7 @@ def train_from_cricsheet_zip(
         team_code: _compute_lineup_strength(lineup, player_stats)
         for team_code, lineup in last_seen_lineups.items()
     }
+    player_strengths = _player_strengths_from_stats(player_stats)
 
     model = {
         "model_type": model_type,
@@ -1042,6 +1104,13 @@ def train_from_cricsheet_zip(
         "blend_alpha": round(blend_alpha, 2),
         "prediction_floor": 18,
         "prediction_ceiling": 82,
+        "catboost_params": {
+            "iterations": epochs,
+            "learning_rate": lr,
+            "l2_leaf_reg": l2,
+            "depth": depth,
+            "random_strength": random_strength,
+        } if model_type == "catboost_classifier" else {},
         "weights": {key: round(value, 8) for key, value in weights.items()},
         "catboost_model_path": CATBOOST_MODEL_PATH.name if model_type == "catboost_classifier" else "",
         "cat_features": CATEGORICAL_FEATURES if model_type == "catboost_classifier" else [],
@@ -1051,6 +1120,7 @@ def train_from_cricsheet_zip(
         "season_stats": season_stats.get(latest_season, {}),
         "season_venue_stats": season_venue_stats.get(latest_season, {}),
         "team_lineup_strengths": team_lineup_strengths,
+        "player_strengths": player_strengths,
         "head_to_head": {"|".join(key): value for key, value in head_to_head.items()},
         "venue_history": venue_history,
     }
