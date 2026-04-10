@@ -12,6 +12,7 @@ import requests
 from dotenv import load_dotenv
 import os
 from prematch_model import predict_match_probability
+from live_model import predict_live_win_probability
 
 load_dotenv()
 
@@ -206,8 +207,15 @@ def fetch_live_matches() -> list[dict]:
     if cached is not None:
         return cached
 
+    final_matches = _fetch_match_infos(("live", "recent", "upcoming"))
+    set_cached(MATCH_LIST_CACHE_KEY, final_matches)
+    set_cached(LIVE_MATCHES_CACHE_KEY, final_matches)
+    return final_matches
+
+
+def _fetch_match_infos(paths: tuple[str, ...]) -> list[dict]:
     matches = []
-    for path in ("live", "recent", "upcoming"):
+    for path in paths:
         url = f"https://cricbuzz-cricket.p.rapidapi.com/matches/v1/{path}"
         response = requests.get(url, headers=get_api_headers(), timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
@@ -226,10 +234,28 @@ def fetch_live_matches() -> list[dict]:
         if info.get("matchId") is not None:
             deduped[str(info["matchId"])] = info
 
-    final_matches = list(deduped.values())
-    set_cached(MATCH_LIST_CACHE_KEY, final_matches)
-    set_cached(LIVE_MATCHES_CACHE_KEY, final_matches)
-    return final_matches
+    return list(deduped.values())
+
+
+def fetch_selectable_matches() -> list[dict]:
+    live_and_upcoming = _fetch_match_infos(("live", "upcoming"))
+    recent_matches = _fetch_match_infos(("recent",))
+
+    latest_complete = None
+    for match_info in recent_matches:
+        if str(match_info.get("state") or "").lower() == "complete":
+            latest_complete = match_info
+            break
+
+    if latest_complete is None:
+        return live_and_upcoming
+
+    merged = {}
+    for match_info in live_and_upcoming + [latest_complete]:
+        match_id = match_info.get("matchId")
+        if match_id is not None:
+            merged[str(match_id)] = match_info
+    return list(merged.values())
 
 
 def get_match_info_from_live(match_id: str) -> dict:
@@ -426,26 +452,45 @@ def parse_score_response(data, match_id: str | None = None):
             res["prediction_note"] = "ML pre-match model based on historical IPL results"
 
         if not res["is_complete"] and res["state"] != "Preview":
+            live_probability = predict_live_win_probability(
+                team_a=res["team_a"],
+                team_b=res["team_b"],
+                batting_team=res["batting_team"] or res["team_a"],
+                innings=int(res["innings"] or 1),
+                runs=runs,
+                wickets=wickets,
+                overs_bowled=overs_bowled,
+                target=int(res["target"] or 0),
+                venue=venue_info,
+            )
             if res["innings"] == 2 and res["target"] > 0:
-                chasing_win = chase_win_probability(runs, wickets, overs_bowled, int(res["target"]))
-                if res["batting_team"] == res["team_a"]:
-                    res["win_probability"] = {"team_a": chasing_win, "team_b": 100 - chasing_win}
+                if live_probability is not None:
+                    res["win_probability"] = live_probability
                 else:
-                    res["win_probability"] = {"team_a": 100 - chasing_win, "team_b": chasing_win}
+                    chasing_win = chase_win_probability(runs, wickets, overs_bowled, int(res["target"]))
+                    if res["batting_team"] == res["team_a"]:
+                        res["win_probability"] = {"team_a": chasing_win, "team_b": 100 - chasing_win}
+                    else:
+                        res["win_probability"] = {"team_a": 100 - chasing_win, "team_b": chasing_win}
                 res["predicted_score"] = int(res["target"])
                 balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
                 runs_needed = max(0, int(res["target"]) - runs)
                 req_rr = (runs_needed / (balls_remaining / 6)) if balls_remaining > 0 else 0
-                res["prediction_note"] = f"{runs_needed} needed from {balls_remaining} balls at {req_rr:.2f} RPO"
+                note_prefix = "Live ML chase model" if live_probability is not None else "Chase model"
+                res["prediction_note"] = f"{note_prefix}: {runs_needed} needed from {balls_remaining} balls at {req_rr:.2f} RPO"
             else:
                 res["predicted_score"] = project_first_innings_score(runs, wickets, overs_bowled)
-                batting_win = first_innings_win_probability(res["predicted_score"], overs_bowled, wickets)
-                if res["batting_team"] == res["team_b"]:
-                    res["win_probability"] = {"team_a": 100 - batting_win, "team_b": batting_win}
+                if live_probability is not None:
+                    res["win_probability"] = live_probability
                 else:
-                    res["win_probability"] = {"team_a": batting_win, "team_b": 100 - batting_win}
+                    batting_win = first_innings_win_probability(res["predicted_score"], overs_bowled, wickets)
+                    if res["batting_team"] == res["team_b"]:
+                        res["win_probability"] = {"team_a": 100 - batting_win, "team_b": batting_win}
+                    else:
+                        res["win_probability"] = {"team_a": batting_win, "team_b": 100 - batting_win}
                 balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
-                res["prediction_note"] = f"Projected total based on {balls_remaining} balls remaining"
+                note_prefix = "Live ML innings model" if live_probability is not None else "Projected total"
+                res["prediction_note"] = f"{note_prefix} with {balls_remaining} balls remaining"
 
         # 4. WIN PROBABILITY MATH FOR COMPLETED MATCHES
         if is_complete:
@@ -481,14 +526,14 @@ def parse_score_response(data, match_id: str | None = None):
 def get_matches():
     try:
         serialized = []
-        for match_info in fetch_live_matches():
+        for match_info in fetch_selectable_matches():
             if not is_ipl_t20_match(match_info):
                 continue
             item = serialize_match_info(match_info)
-            if item and item["state"] != "Complete":
+            if item:
                 serialized.append(item)
 
-        state_order = {"Live": 0, "In Progress": 0, "Complete": 1, "Preview": 2}
+        state_order = {"Live": 0, "In Progress": 0, "Preview": 1, "Complete": 2}
         serialized.sort(
             key=lambda item: (
                 state_order.get(item["state"], 3),
