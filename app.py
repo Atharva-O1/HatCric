@@ -6,17 +6,47 @@ HatCric Backend Proxy
 import time
 import logging
 import re
-from flask import Flask, jsonify, abort
+import datetime
+from flask import Flask, jsonify, abort, request
 from flask_cors import CORS
 import requests
 from dotenv import load_dotenv
 import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token
+from werkzeug.security import generate_password_hash, check_password_hash
 from prematch_model import predict_match_probability
 from live_model import predict_live_win_probability
 
 load_dotenv()
 
 app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///hatcric.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-in-prod")
+
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    is_premium = db.Column(db.Boolean, default=False)
+
+
+class Usage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    match_id = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+
+
+with app.app_context():
+    db.create_all()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,7 +62,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:8080", "http://127.0.0.1:8080",
 ]
 
-CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["*", "Authorization", "Content-Type"])
 
 API_KEY = os.getenv("LIVE_SCORE_API_KEY")
 if not API_KEY:
@@ -676,9 +706,96 @@ def parse_score_response(data, match_id: str | None = None):
         }
 
 
+
+@app.route("/api/auth/register", methods=["POST"])
+def register():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    is_premium = data.get("is_premium", False)
+    if not username or not password:
+        return jsonify({"error": "Missing credentials"}), 400
+    if User.query.filter_by(username=username).first():
+        return jsonify({"error": "User already exists"}), 400
+
+    user = User(username=username, password_hash=generate_password_hash(password), is_premium=is_premium)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "Registered successfully"}), 201
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def login():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({
+        "access_token": access_token,
+        "is_premium": user.is_premium,
+        "username": user.username
+    }), 200
+
+
+@app.route("/api/subscribe", methods=["POST"])
+@jwt_required()
+def subscribe():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    user.is_premium = True
+    db.session.commit()
+    return jsonify({"message": "Successfully upgraded to Premium!"}), 200
+
+
+def check_usage_limit(match_id):
+    auth_header = request.headers.get("Authorization", "")
+    user_id = None
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            decoded = decode_token(token)
+            user_id = decoded["sub"]
+        except Exception:
+            pass
+
+    if user_id:
+        user = User.query.get(user_id)
+        if user and user.is_premium:
+            return True, None
+
+        viewed = db.session.query(Usage.match_id).filter_by(user_id=user_id).distinct().all()
+        viewed_ids = [m[0] for m in viewed]
+        if match_id not in viewed_ids:
+            if len(viewed_ids) >= 3:
+                return False, {"error": "Free limit reached.", "paywall": True}
+            db.session.add(Usage(user_id=user_id, match_id=match_id))
+            db.session.commit()
+        return True, None
+    else:
+        ip_addr = request.remote_addr
+        viewed = db.session.query(Usage.match_id).filter_by(ip_address=ip_addr).distinct().all()
+        viewed_ids = [m[0] for m in viewed]
+        if match_id not in viewed_ids:
+            if len(viewed_ids) >= 1:
+                return False, {"error": "Guest limit reached.", "paywall": True, "guest": True}
+            db.session.add(Usage(ip_address=ip_addr, match_id=match_id))
+            db.session.commit()
+        return True, None
+
+
 @app.route("/api/matches", methods=["GET"])
 def get_matches():
     try:
+        cached = get_cached("serialize_get_matches")
+        if cached:
+            return jsonify(cached)
+
         serialized = []
         for match_info in fetch_selectable_matches():
             if not is_ipl_t20_match(match_info):
@@ -695,13 +812,27 @@ def get_matches():
             )
         )
 
-        return jsonify({
+        response_data = {
             "matches": serialized,
             "count": len(serialized),
-        })
+        }
+        set_cached("serialize_get_matches", response_data)
+        return jsonify(response_data)
     except Exception as exc:
         logger.error("Failed to fetch match list: %s", exc)
-        return jsonify({"error": "Unable to fetch match list", "matches": []}), 500
+        return jsonify({
+            "error": "Unable to fetch match list - Rate hit",
+            "count": 1,
+            "matches": [
+                {
+                    "badge": "Fallback Match (Rate Limited)",
+                    "label": "CSK vs DC",
+                    "match_id": "149790",
+                    "series_name": "Indian Premier League 2026",
+                    "state": "Live"
+                }
+            ]
+        }), 200
 
 
 @app.route("/api/match/<string:match_id>", methods=["GET"])
@@ -723,7 +854,11 @@ def get_match_data(match_id: str):
             "win_probability": {"team_a": 42, "team_b": 58}
         })
 
+
     cached_data = get_cached(match_id)
+    allowed, error_payload = check_usage_limit(match_id)
+    if not allowed:
+        return jsonify(error_payload), 403
     if cached_data is not None:
         return jsonify({**cached_data, "match_id": match_id, "from_cache": True})
 
@@ -740,6 +875,12 @@ def get_match_data(match_id: str):
         return jsonify({**sanitised, "match_id": match_id, "from_cache": False})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/")
+def serve_dashboard():
+    return app.send_static_file("dashboard.html")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
