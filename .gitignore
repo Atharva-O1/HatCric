@@ -23,3 +23,9 @@ ENV/
 .idea/
 *.swp
 *.swo
+
+
+ipl_json.zip
+
+catboost_info/
+prematch_model_tmp.json

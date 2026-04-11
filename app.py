@@ -5,15 +5,48 @@ HatCric Backend Proxy
 
 import time
 import logging
-from flask import Flask, jsonify, abort
+import re
+import datetime
+from flask import Flask, jsonify, abort, request, send_file
 from flask_cors import CORS
 import requests
 from dotenv import load_dotenv
 import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token
+from werkzeug.security import generate_password_hash, check_password_hash
+from prematch_model import predict_match_probability
+from live_model import predict_live_win_probability
 
 load_dotenv()
 
 app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///hatcric.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-in-prod")
+
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    is_premium = db.Column(db.Boolean, default=False)
+
+
+class Usage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    match_id = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+
+
+with app.app_context():
+    db.create_all()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,7 +62,12 @@ ALLOWED_ORIGINS = [
     "http://localhost:8080", "http://127.0.0.1:8080",
 ]
 
-CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "*"}},
+    supports_credentials=False,
+    allow_headers=["Authorization", "Content-Type"],
+)
 
 API_KEY = os.getenv("LIVE_SCORE_API_KEY")
 if not API_KEY:
@@ -39,6 +77,7 @@ CACHE_TTL_SECONDS = 15
 REQUEST_TIMEOUT = 8
 _cache: dict[str, dict] = {}
 LIVE_MATCHES_CACHE_KEY = "__live_matches__"
+MATCH_LIST_CACHE_KEY = "__match_lists__"
 
 
 def overs_to_balls(overs) -> int:
@@ -55,16 +94,29 @@ def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
 
-def detect_winner(status: str, team_a: str, team_b: str) -> str | None:
+def _alias_in_status(alias: str, status_l: str) -> bool:
+    alias = (alias or "").strip().lower()
+    if not alias:
+        return False
+    if len(alias) <= 4 and alias.replace(" ", "").isalpha():
+        return re.search(rf"\b{re.escape(alias)}\b", status_l) is not None
+    return alias in status_l
+
+
+def detect_winner(
+    status: str,
+    team_a: str,
+    team_b: str,
+    team_a_full: str = "",
+    team_b_full: str = "",
+) -> str | None:
     status_l = (status or "").lower()
-    if "won" not in status_l:
+    if "won" not in status_l and "beat" not in status_l:
         return None
 
-    team_a_l = (team_a or "").lower()
-    team_b_l = (team_b or "").lower()
-    if team_a_l and team_a_l in status_l:
+    if _alias_in_status(team_a, status_l) or _alias_in_status(team_a_full, status_l):
         return "team_a"
-    if team_b_l and team_b_l in status_l:
+    if _alias_in_status(team_b, status_l) or _alias_in_status(team_b_full, status_l):
         return "team_b"
     return None
 
@@ -128,6 +180,45 @@ def first_innings_win_probability(projected_total: int, overs_bowled: float, wic
     return round(clamp(50 + advantage * 0.6, 10, 90))
 
 
+def build_prediction_explanation(
+    *,
+    state: str,
+    is_complete: bool,
+    team_a: str,
+    team_b: str,
+    team_a_pct: int,
+    team_b_pct: int,
+    status: str,
+    batting_team: str | None = None,
+    innings: int = 1,
+    target: int = 0,
+    runs: int = 0,
+    wickets: int = 0,
+    overs_bowled: float = 0.0,
+    predicted_score: int = 0,
+    used_lineups: bool = False,
+) -> str:
+    favored_team = team_a if team_a_pct >= team_b_pct else team_b
+
+    if is_complete:
+        return status or f"{favored_team} finished on top."
+
+    if state == "Preview":
+        if used_lineups:
+            return f"HatCric favors {favored_team} from the announced XI balance, venue context, and recent team strength."
+        return f"HatCric favors {favored_team} from recent form, venue fit, and historical team strength."
+
+    balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
+    if innings == 2 and target > 0:
+        runs_needed = max(0, target - runs)
+        req_rr = (runs_needed / (balls_remaining / 6)) if balls_remaining > 0 else 0.0
+        return f"HatCric leans {favored_team} based on the chase pressure, wickets in hand, and required rate at {req_rr:.2f}."
+
+    current_rr = (runs / (overs_to_balls(overs_bowled) / 6)) if overs_to_balls(overs_bowled) > 0 else 0.0
+    batting_side = batting_team or favored_team
+    return f"HatCric leans {favored_team} because {batting_side} is scoring at {current_rr:.2f}, projects to {predicted_score}, and has {max(0, 10 - wickets)} wickets left."
+
+
 def _safe_int(value, default: int = 0) -> int:
     try:
         return int(float(value))
@@ -186,25 +277,47 @@ def get_api_headers() -> dict:
 
 
 def fetch_live_matches() -> list[dict]:
-    cached = get_cached(LIVE_MATCHES_CACHE_KEY)
+    cached = get_cached(MATCH_LIST_CACHE_KEY)
     if cached is not None:
         return cached
 
-    url = "https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live"
-    response = requests.get(url, headers=get_api_headers(), timeout=REQUEST_TIMEOUT)
-    response.raise_for_status()
-    raw = response.json()
+    final_matches = _fetch_match_infos(("live", "recent", "upcoming"))
+    set_cached(MATCH_LIST_CACHE_KEY, final_matches)
+    set_cached(LIVE_MATCHES_CACHE_KEY, final_matches)
+    return final_matches
 
+
+def _fetch_match_infos(paths: tuple[str, ...]) -> list[dict]:
     matches = []
-    for wrapper in raw.get("seriesMatches", []):
-        adapter = wrapper.get("seriesAdWrapper", {})
-        for match in adapter.get("matches", []):
-            info = match.get("matchInfo", {}) or {}
-            if info:
-                matches.append(info)
+    for path in paths:
+        url = f"https://cricbuzz-cricket.p.rapidapi.com/matches/v1/{path}"
+        response = requests.get(url, headers=get_api_headers(), timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+        raw = response.json()
 
-    set_cached(LIVE_MATCHES_CACHE_KEY, matches)
-    return matches
+        for type_match in raw.get("typeMatches", []):
+            for wrapper in type_match.get("seriesMatches", []):
+                adapter = wrapper.get("seriesAdWrapper", {})
+                for match in adapter.get("matches", []):
+                    info = match.get("matchInfo", {}) or {}
+                    if info:
+                        matches.append(info)
+
+    deduped = {}
+    for info in matches:
+        if info.get("matchId") is not None:
+            deduped[str(info["matchId"])] = info
+
+    return list(deduped.values())
+
+
+def fetch_selectable_matches() -> list[dict]:
+    merged = {}
+    for match_info in _fetch_match_infos(("live", "upcoming", "recent")):
+        match_id = match_info.get("matchId")
+        if match_id is not None:
+            merged[str(match_id)] = match_info
+    return list(merged.values())
 
 
 def get_match_info_from_live(match_id: str) -> dict:
@@ -215,6 +328,177 @@ def get_match_info_from_live(match_id: str) -> dict:
     except Exception as exc:
         logger.warning("Live matches enrichment failed for %s: %s", match_id, exc)
     return {}
+
+
+def _normalize_timestamp_ms(value) -> int | None:
+    if value in (None, ""):
+        return None
+
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return None
+        if stripped.isdigit():
+            value = int(stripped)
+        else:
+            try:
+                parsed = datetime.datetime.fromisoformat(stripped.replace("Z", "+00:00"))
+                return int(parsed.timestamp() * 1000)
+            except ValueError:
+                return None
+
+    if isinstance(value, (int, float)):
+        numeric = int(value)
+        if numeric <= 0:
+            return None
+        return numeric if numeric >= 10_000_000_000 else numeric * 1000
+
+    return None
+
+
+def extract_match_start_timestamp(match_info: dict) -> int | None:
+    for key in (
+        "startDate",
+        "startTime",
+        "matchStartTimestamp",
+        "matchStartTime",
+        "scheduleStartTime",
+        "scheduledDate",
+        "date",
+    ):
+        timestamp = _normalize_timestamp_ms(match_info.get(key))
+        if timestamp is not None:
+            return timestamp
+    return None
+
+
+def serialize_match_info(match_info: dict) -> dict | None:
+    match_id = match_info.get("matchId")
+    if match_id is None:
+        return None
+
+    team1_info = match_info.get("team1", {}) or {}
+    team2_info = match_info.get("team2", {}) or {}
+    team_a = team1_info.get("shortName") or team1_info.get("teamSName") or team1_info.get("teamName")
+    team_b = team2_info.get("shortName") or team2_info.get("teamSName") or team2_info.get("teamName")
+    if not team_a or not team_b:
+        return None
+
+    state = match_info.get("state") or "Unknown"
+    series_name = match_info.get("seriesName") or ""
+    status = match_info.get("status") or ""
+    label = f"{team_a} vs {team_b}"
+    badge = state
+
+    match_desc = match_info.get("matchDesc") or match_info.get("matchDescription") or ""
+    if match_desc:
+        badge = match_desc
+    elif series_name:
+        badge = series_name
+
+    start_timestamp = extract_match_start_timestamp(match_info)
+    start_time_utc = None
+    if start_timestamp is not None:
+        start_time_utc = datetime.datetime.fromtimestamp(
+            start_timestamp / 1000,
+            tz=datetime.timezone.utc,
+        ).isoformat().replace("+00:00", "Z")
+
+    return {
+        "match_id": str(match_id),
+        "team_a": team_a,
+        "team_b": team_b,
+        "label": label,
+        "badge": badge,
+        "state": state,
+        "status": status,
+        "match_desc": match_desc,
+        "series_name": series_name,
+        "start_timestamp": start_timestamp,
+        "start_time_utc": start_time_utc,
+        "venue": {
+            "ground": (match_info.get("venueInfo", {}) or {}).get("ground", ""),
+            "city": (match_info.get("venueInfo", {}) or {}).get("city", ""),
+        },
+    }
+
+
+def match_list_sort_key(item: dict) -> tuple:
+    state = item.get("state") or ""
+    state_order = {"Live": 0, "In Progress": 0, "Preview": 1, "Complete": 2}
+    start_timestamp = int(item.get("start_timestamp") or 0)
+
+    if state == "Complete":
+        return (state_order.get(state, 3), -start_timestamp, item["label"])
+
+    future_timestamp = start_timestamp if start_timestamp else 99_999_999_999_999
+    return (state_order.get(state, 3), future_timestamp, item["label"])
+
+
+def _collect_player_name_list(value) -> list[str]:
+    names: list[str] = []
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                cleaned = item.strip()
+                if cleaned:
+                    names.append(cleaned)
+            elif isinstance(item, dict):
+                name = item.get("name") or item.get("fullName") or item.get("playerName") or item.get("nickName")
+                if isinstance(name, str) and name.strip():
+                    names.append(name.strip())
+    return names
+
+
+def _extract_lineups_from_container(container: dict, aliases: set[str]) -> list[str]:
+    for key in ("playingXI", "playingXi", "playing11", "players", "squad", "probableXI", "probableXi"):
+        lineup = _collect_player_name_list(container.get(key))
+        if len(lineup) >= 2:
+            return lineup
+
+    team_name = str(container.get("teamName") or container.get("name") or container.get("fullName") or "").strip().lower()
+    if team_name and team_name in aliases:
+        for key in ("players", "playingXI", "playingXi", "playing11", "squad", "probableXI", "probableXi"):
+            lineup = _collect_player_name_list(container.get(key))
+            if len(lineup) >= 2:
+                return lineup
+    return []
+
+
+def _find_lineup_candidates(value, aliases: set[str], found: list[list[str]]) -> None:
+    if isinstance(value, dict):
+        lineup = _extract_lineups_from_container(value, aliases)
+        if lineup:
+            found.append(lineup)
+        for nested in value.values():
+            _find_lineup_candidates(nested, aliases, found)
+    elif isinstance(value, list):
+        for item in value:
+            _find_lineup_candidates(item, aliases, found)
+
+
+def extract_preview_lineups(data: dict, team_a: str, team_b: str, team_a_full: str = "", team_b_full: str = "") -> tuple[list[str], list[str]]:
+    aliases_a = {alias.strip().lower() for alias in (team_a, team_a_full) if alias}
+    aliases_b = {alias.strip().lower() for alias in (team_b, team_b_full) if alias}
+
+    candidates_a: list[list[str]] = []
+    candidates_b: list[list[str]] = []
+    _find_lineup_candidates(data, aliases_a, candidates_a)
+    _find_lineup_candidates(data, aliases_b, candidates_b)
+
+    lineup_a = max(candidates_a, key=len, default=[])
+    lineup_b = max(candidates_b, key=len, default=[])
+    return lineup_a, lineup_b
+
+
+def is_ipl_t20_match(match_info: dict) -> bool:
+    series_name = str(match_info.get("seriesName") or "").lower()
+    match_format = str(match_info.get("matchFormat") or match_info.get("matchType") or "").lower()
+    if "indian premier league" not in series_name and "ipl" not in series_name:
+        return False
+    if match_format and "t20" not in match_format:
+        return False
+    return True
 
 def parse_score_response(data, match_id: str | None = None):
     try:
@@ -232,6 +516,9 @@ def parse_score_response(data, match_id: str | None = None):
         team2_info = match_info.get("team2", {})
         team1 = team1_info.get("shortName") or team1_info.get("teamSName") or "TEAM A"
         team2 = team2_info.get("shortName") or team2_info.get("teamSName") or "TEAM B"
+        team1_full = team1_info.get("teamName") or team1
+        team2_full = team2_info.get("teamName") or team2
+        venue_info = match_info.get("venueInfo", {})
 
         res = {
             "innings": 1, "target": 0, "current_score": 0, "wickets": 0, "overs_bowled": 0.0,
@@ -242,6 +529,7 @@ def parse_score_response(data, match_id: str | None = None):
             "batters_at_crease": [],
             "predicted_score": 0,
             "prediction_note": "Awaiting live data",
+            "prediction_explanation": "HatCric is waiting for enough match context to explain the edge.",
             "win_probability": {"team_a": 50, "team_b": 50}
         }
 
@@ -336,31 +624,109 @@ def parse_score_response(data, match_id: str | None = None):
         overs_bowled = float(res["overs_bowled"] or 0)
         res["wickets_in_hand"] = max(0, 10 - wickets)
 
+        if res["state"] == "Preview":
+            lineup_a, lineup_b = extract_preview_lineups(data, res["team_a"], res["team_b"], team1_full, team2_full)
+            res["win_probability"] = predict_match_probability(
+                res["team_a"],
+                res["team_b"],
+                venue_info,
+                status=status,
+                team_a_full=team1_full,
+                team_b_full=team2_full,
+                team_a_lineup=lineup_a,
+                team_b_lineup=lineup_b,
+            )
+            if lineup_a and lineup_b:
+                res["prediction_note"] = "ML pre-match model using announced lineups"
+            else:
+                res["prediction_note"] = "ML pre-match model based on historical IPL results"
+            res["prediction_explanation"] = build_prediction_explanation(
+                state=res["state"],
+                is_complete=res["is_complete"],
+                team_a=res["team_a"],
+                team_b=res["team_b"],
+                team_a_pct=int(res["win_probability"]["team_a"]),
+                team_b_pct=int(res["win_probability"]["team_b"]),
+                status=status,
+                used_lineups=bool(lineup_a and lineup_b),
+            )
+
         if not res["is_complete"] and res["state"] != "Preview":
+            live_probability = predict_live_win_probability(
+                team_a=res["team_a"],
+                team_b=res["team_b"],
+                batting_team=res["batting_team"] or res["team_a"],
+                innings=int(res["innings"] or 1),
+                runs=runs,
+                wickets=wickets,
+                overs_bowled=overs_bowled,
+                target=int(res["target"] or 0),
+                venue=venue_info,
+            )
             if res["innings"] == 2 and res["target"] > 0:
-                chasing_win = chase_win_probability(runs, wickets, overs_bowled, int(res["target"]))
-                if res["batting_team"] == res["team_a"]:
-                    res["win_probability"] = {"team_a": chasing_win, "team_b": 100 - chasing_win}
+                if live_probability is not None:
+                    res["win_probability"] = live_probability
                 else:
-                    res["win_probability"] = {"team_a": 100 - chasing_win, "team_b": chasing_win}
+                    chasing_win = chase_win_probability(runs, wickets, overs_bowled, int(res["target"]))
+                    if res["batting_team"] == res["team_a"]:
+                        res["win_probability"] = {"team_a": chasing_win, "team_b": 100 - chasing_win}
+                    else:
+                        res["win_probability"] = {"team_a": 100 - chasing_win, "team_b": chasing_win}
                 res["predicted_score"] = int(res["target"])
                 balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
                 runs_needed = max(0, int(res["target"]) - runs)
                 req_rr = (runs_needed / (balls_remaining / 6)) if balls_remaining > 0 else 0
-                res["prediction_note"] = f"{runs_needed} needed from {balls_remaining} balls at {req_rr:.2f} RPO"
+                note_prefix = "Live ML chase model" if live_probability is not None else "Chase model"
+                res["prediction_note"] = f"{note_prefix}: {runs_needed} needed from {balls_remaining} balls at {req_rr:.2f} RPO"
+                res["prediction_explanation"] = build_prediction_explanation(
+                    state=res["state"],
+                    is_complete=res["is_complete"],
+                    team_a=res["team_a"],
+                    team_b=res["team_b"],
+                    team_a_pct=int(res["win_probability"]["team_a"]),
+                    team_b_pct=int(res["win_probability"]["team_b"]),
+                    status=status,
+                    batting_team=res["batting_team"],
+                    innings=int(res["innings"]),
+                    target=int(res["target"]),
+                    runs=runs,
+                    wickets=wickets,
+                    overs_bowled=overs_bowled,
+                    predicted_score=int(res["predicted_score"]),
+                )
             else:
                 res["predicted_score"] = project_first_innings_score(runs, wickets, overs_bowled)
-                batting_win = first_innings_win_probability(res["predicted_score"], overs_bowled, wickets)
-                if res["batting_team"] == res["team_b"]:
-                    res["win_probability"] = {"team_a": 100 - batting_win, "team_b": batting_win}
+                if live_probability is not None:
+                    res["win_probability"] = live_probability
                 else:
-                    res["win_probability"] = {"team_a": batting_win, "team_b": 100 - batting_win}
+                    batting_win = first_innings_win_probability(res["predicted_score"], overs_bowled, wickets)
+                    if res["batting_team"] == res["team_b"]:
+                        res["win_probability"] = {"team_a": 100 - batting_win, "team_b": batting_win}
+                    else:
+                        res["win_probability"] = {"team_a": batting_win, "team_b": 100 - batting_win}
                 balls_remaining = max(0, 120 - overs_to_balls(overs_bowled))
-                res["prediction_note"] = f"Projected total based on {balls_remaining} balls remaining"
+                note_prefix = "Live ML innings model" if live_probability is not None else "Projected total"
+                res["prediction_note"] = f"{note_prefix} with {balls_remaining} balls remaining"
+                res["prediction_explanation"] = build_prediction_explanation(
+                    state=res["state"],
+                    is_complete=res["is_complete"],
+                    team_a=res["team_a"],
+                    team_b=res["team_b"],
+                    team_a_pct=int(res["win_probability"]["team_a"]),
+                    team_b_pct=int(res["win_probability"]["team_b"]),
+                    status=status,
+                    batting_team=res["batting_team"],
+                    innings=int(res["innings"]),
+                    target=int(res["target"]),
+                    runs=runs,
+                    wickets=wickets,
+                    overs_bowled=overs_bowled,
+                    predicted_score=int(res["predicted_score"]),
+                )
 
         # 4. WIN PROBABILITY MATH FOR COMPLETED MATCHES
         if is_complete:
-            winner = detect_winner(status, res["team_a"], res["team_b"])
+            winner = detect_winner(status, res["team_a"], res["team_b"], team1_full, team2_full)
             if winner == "team_a":
                 res["win_probability"] = {"team_a": 100, "team_b": 0}
             elif winner == "team_b":
@@ -369,6 +735,15 @@ def parse_score_response(data, match_id: str | None = None):
                 res["win_probability"] = {"team_a": 50, "team_b": 50}
             res["predicted_score"] = runs
             res["prediction_note"] = status
+            res["prediction_explanation"] = build_prediction_explanation(
+                state=res["state"],
+                is_complete=res["is_complete"],
+                team_a=res["team_a"],
+                team_b=res["team_b"],
+                team_a_pct=int(res["win_probability"]["team_a"]),
+                team_b_pct=int(res["win_probability"]["team_b"]),
+                status=status,
+            )
 
         return res
 
@@ -384,8 +759,133 @@ def parse_score_response(data, match_id: str | None = None):
             "is_complete": False,
             "state": "Error",
             "batters_at_crease": [],
+            "prediction_explanation": "HatCric could not explain the edge because the match feed failed to parse.",
             "win_probability": {"team_a": 50, "team_b": 50},
         }
+
+
+
+@app.route("/api/auth/register", methods=["POST"])
+def register():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    is_premium = data.get("is_premium", False)
+    if not username or not password:
+        return jsonify({"error": "Missing credentials"}), 400
+    if User.query.filter_by(username=username).first():
+        return jsonify({"error": "User already exists"}), 400
+
+    user = User(username=username, password_hash=generate_password_hash(password), is_premium=is_premium)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "Registered successfully"}), 201
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def login():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({
+        "access_token": access_token,
+        "is_premium": user.is_premium,
+        "username": user.username
+    }), 200
+
+
+@app.route("/api/subscribe", methods=["POST"])
+@jwt_required()
+def subscribe():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    user.is_premium = True
+    db.session.commit()
+    return jsonify({"message": "Successfully upgraded to Premium!"}), 200
+
+
+def check_usage_limit(match_id):
+    auth_header = request.headers.get("Authorization", "")
+    user_id = None
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            decoded = decode_token(token)
+            user_id = decoded["sub"]
+        except Exception:
+            pass
+
+    if user_id:
+        user = User.query.get(user_id)
+        if user and user.is_premium:
+            return True, None
+
+        viewed = db.session.query(Usage.match_id).filter_by(user_id=user_id).distinct().all()
+        viewed_ids = [m[0] for m in viewed]
+        if match_id not in viewed_ids:
+            if len(viewed_ids) >= 3:
+                return False, {"error": "Free limit reached.", "paywall": True}
+            db.session.add(Usage(user_id=user_id, match_id=match_id))
+            db.session.commit()
+        return True, None
+    else:
+        ip_addr = request.remote_addr
+        viewed = db.session.query(Usage.match_id).filter_by(ip_address=ip_addr).distinct().all()
+        viewed_ids = [m[0] for m in viewed]
+        if match_id not in viewed_ids:
+            if len(viewed_ids) >= 1:
+                return False, {"error": "Guest limit reached.", "paywall": True, "guest": True}
+            db.session.add(Usage(ip_address=ip_addr, match_id=match_id))
+            db.session.commit()
+        return True, None
+
+
+@app.route("/api/matches", methods=["GET"])
+def get_matches():
+    try:
+        cached = get_cached("serialize_get_matches")
+        if cached:
+            return jsonify(cached)
+
+        serialized = []
+        for match_info in fetch_selectable_matches():
+            if not is_ipl_t20_match(match_info):
+                continue
+            item = serialize_match_info(match_info)
+            if item:
+                serialized.append(item)
+
+        serialized.sort(key=match_list_sort_key)
+
+        response_data = {
+            "matches": serialized,
+            "count": len(serialized),
+        }
+        set_cached("serialize_get_matches", response_data)
+        return jsonify(response_data)
+    except Exception as exc:
+        logger.error("Failed to fetch match list: %s", exc)
+        return jsonify({
+            "error": "Unable to fetch match list - Rate hit",
+            "count": 1,
+            "matches": [
+                {
+                    "badge": "Fallback Match (Rate Limited)",
+                    "label": "CSK vs DC",
+                    "match_id": "149790",
+                    "series_name": "Indian Premier League 2026",
+                    "state": "Live"
+                }
+            ]
+        }), 200
+
 
 @app.route("/api/match/<string:match_id>", methods=["GET"])
 def get_match_data(match_id: str):
@@ -402,10 +902,15 @@ def get_match_data(match_id: str):
             ],
             "predicted_score": 185,
             "prediction_note": "65 needed from 34 balls at 11.47 RPO",
+            "prediction_explanation": "HatCric leans MI because the chase is alive, wickets are in hand, and the required rate is still manageable.",
             "win_probability": {"team_a": 42, "team_b": 58}
         })
 
+
     cached_data = get_cached(match_id)
+    allowed, error_payload = check_usage_limit(match_id)
+    if not allowed:
+        return jsonify(error_payload), 403
     if cached_data is not None:
         return jsonify({**cached_data, "match_id": match_id, "from_cache": True})
 
@@ -422,6 +927,12 @@ def get_match_data(match_id: str):
         return jsonify({**sanitised, "match_id": match_id, "from_cache": False})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/")
+def serve_dashboard():
+    return send_file(os.path.join(app.root_path, "dashboard.html"))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

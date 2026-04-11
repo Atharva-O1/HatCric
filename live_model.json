@@ -1,0 +1,35 @@
+{
+  "model_type": "catboost_live_classifier",
+  "trained_on_matches": 1183,
+  "trained_on_rows": 264236,
+  "training_accuracy": 0.9941,
+  "validation_accuracy": 0.7119,
+  "validation_log_loss": 0.5659,
+  "feature_order": [
+    "innings",
+    "runs",
+    "wickets",
+    "balls_bowled",
+    "balls_remaining",
+    "wickets_in_hand",
+    "current_rr",
+    "target",
+    "runs_needed",
+    "required_rr",
+    "run_rate_edge",
+    "projected_total",
+    "target_buffer",
+    "batting_team_code",
+    "bowling_team_code",
+    "venue_city",
+    "venue_ground",
+    "season"
+  ],
+  "categorical_features": [
+    "batting_team_code",
+    "bowling_team_code",
+    "venue_city",
+    "venue_ground",
+    "season"
+  ]
+}
