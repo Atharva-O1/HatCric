@@ -233,7 +233,7 @@ def load_live_model_meta(model_path: Path | None = None) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-_LIVE_CATBOOST_CACHE: CatBoostClassifier | None | bool = None
+_LIVE_CATBOOST_CACHE: object | None | bool = None
 
 
 def load_live_catboost_model(model_path: Path | None = None):

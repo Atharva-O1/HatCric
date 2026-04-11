@@ -474,7 +474,7 @@ def load_model(model_path: Path | None = None) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-_CATBOOST_CACHE: CatBoostClassifier | None | bool = None
+_CATBOOST_CACHE: object | None | bool = None
 
 
 def load_catboost_model(model_path: Path | None = None):
