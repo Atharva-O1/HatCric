@@ -15,6 +15,7 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token
 from werkzeug.security import generate_password_hash, check_password_hash
+import razorpay
 from prematch_model import predict_match_probability
 from live_model import predict_live_win_probability
 
@@ -25,6 +26,8 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///hatcric.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-in-prod")
+
+
 
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
@@ -741,16 +744,65 @@ def login():
     }), 200
 
 
-@app.route("/api/subscribe", methods=["POST"])
+@app.route("/api/create-razorpay-order", methods=["POST"])
 @jwt_required()
-def subscribe():
+def create_razorpay_order():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
-    user.is_premium = True
-    db.session.commit()
-    return jsonify({"message": "Successfully upgraded to Premium!"}), 200
+        
+    try:
+        order_amount = 50000 # 500 INR in paise
+        order_currency = 'INR'
+        order_receipt = f'receipt_{user_id}'
+        notes = {'user_id': user_id}
+        
+        client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID", ""), os.getenv("RAZORPAY_KEY_SECRET", "")))
+        razorpay_order = client.order.create(dict(amount=order_amount, currency=order_currency, receipt=order_receipt, notes=notes))
+        
+        return jsonify({
+            "order_id": razorpay_order['id'],
+            "amount": order_amount,
+            "currency": order_currency,
+            "key_id": os.getenv("RAZORPAY_KEY_ID", "")
+        }), 200
+    except Exception as e:
+        logger.error(f"Razorpay order error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/verify-razorpay-payment", methods=["POST"])
+@jwt_required()
+def verify_razorpay_payment():
+    data = request.json
+    razorpay_payment_id = data.get('razorpay_payment_id')
+    razorpay_order_id = data.get('razorpay_order_id')
+    razorpay_signature = data.get('razorpay_signature')
+    
+    if not razorpay_payment_id or not razorpay_signature:
+        return jsonify({"error": "Missing payment details"}), 400
+    
+    client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID", ""), os.getenv("RAZORPAY_KEY_SECRET", "")))
+    
+    try:
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        })
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if user:
+            user.is_premium = True
+            db.session.commit()
+            return jsonify({"message": "Successfully upgraded to Premium!"}), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        logger.error(f"Razorpay signature verification failed: {e}")
+        return jsonify({"error": "Invalid signature"}), 400
 
 
 def check_usage_limit(match_id):
@@ -769,23 +821,19 @@ def check_usage_limit(match_id):
         if user and user.is_premium:
             return True, None
 
-        viewed = db.session.query(Usage.match_id).filter_by(user_id=user_id).distinct().all()
-        viewed_ids = [m[0] for m in viewed]
-        if match_id not in viewed_ids:
-            if len(viewed_ids) >= 3:
-                return False, {"error": "Free limit reached.", "paywall": True}
-            db.session.add(Usage(user_id=user_id, match_id=match_id))
-            db.session.commit()
+        viewed = db.session.query(Usage.id).filter_by(user_id=user_id).all()
+        if len(viewed) >= 3:
+            return False, {"error": "Free limit reached.", "paywall": True}
+        db.session.add(Usage(user_id=user_id, match_id=match_id))
+        db.session.commit()
         return True, None
     else:
         ip_addr = request.remote_addr
-        viewed = db.session.query(Usage.match_id).filter_by(ip_address=ip_addr).distinct().all()
-        viewed_ids = [m[0] for m in viewed]
-        if match_id not in viewed_ids:
-            if len(viewed_ids) >= 1:
-                return False, {"error": "Guest limit reached.", "paywall": True, "guest": True}
-            db.session.add(Usage(ip_address=ip_addr, match_id=match_id))
-            db.session.commit()
+        viewed = db.session.query(Usage.id).filter_by(ip_address=ip_addr).all()
+        if len(viewed) >= 1:
+            return False, {"error": "Guest limit reached.", "paywall": True, "guest": True}
+        db.session.add(Usage(ip_address=ip_addr, match_id=match_id))
+        db.session.commit()
         return True, None
 
 
@@ -837,6 +885,10 @@ def get_matches():
 
 @app.route("/api/match/<string:match_id>", methods=["GET"])
 def get_match_data(match_id: str):
+    allowed, error_payload = check_usage_limit(match_id)
+    if not allowed:
+        return jsonify(error_payload), 403
+
     if match_id == "mock_test":
         return jsonify({
             "match_id": "mock_test", "innings": 2, "target": 185, "current_score": 120,
@@ -856,9 +908,6 @@ def get_match_data(match_id: str):
 
 
     cached_data = get_cached(match_id)
-    allowed, error_payload = check_usage_limit(match_id)
-    if not allowed:
-        return jsonify(error_payload), 403
     if cached_data is not None:
         return jsonify({**cached_data, "match_id": match_id, "from_cache": True})
 

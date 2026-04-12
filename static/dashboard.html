@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>HatCric Predictor | Live IPL 2026 Analytics</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800;900&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
         tailwind.config = {
@@ -1050,22 +1051,59 @@
 
     async function mockSubscribe() {
         const token = localStorage.getItem('hc_token');
-        if(!token) return showLogin();
+        if (!token) return showLogin();
+        
         try {
-            const res = await fetch(`${API_BASE}/api/subscribe`, {
+            const res = await fetch(`${API_BASE}/api/create-razorpay-order`, {
                 method: 'POST',
                 headers: {'Authorization': `Bearer ${token}`}
             });
             const data = await res.json();
-            if(!res.ok) return alert(data.error || 'Error');
-            alert(data.message);
-            localStorage.setItem('hc_premium', 'true');
-            document.getElementById('paywall-modal').style.display = 'none';
-            updateAuthUI();
-            fetchMatchData();
-            schedulePoll();
+            if (!res.ok) return alert(data.error || 'Error initializing order');
+            
+            var options = {
+                "key": data.key_id,
+                "amount": data.amount,
+                "currency": data.currency,
+                "name": "HatCric Predictor",
+                "description": "Premium Subscription",
+                "order_id": data.order_id,
+                "handler": async function (response){
+                    const verifyRes = await fetch(`${API_BASE}/api/verify-razorpay-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    });
+                    const verifyData = await verifyRes.json();
+                    if(verifyRes.ok) {
+                        alert('Payment successful! You are now Premium.');
+                        localStorage.setItem('hc_premium', 'true');
+                        document.getElementById('paywall-modal').style.display = 'none';
+                        updateAuthUI();
+                        fetchMatchData();
+                        schedulePoll();
+                    } else {
+                        alert(verifyData.error || 'Payment verification failed');
+                    }
+                },
+                "theme": {
+                    "color": "#8eff71"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                alert('Payment failed. ' + response.error.description);
+            });
+            rzp1.open();
         } catch(e) {
-            alert('Error simulating payment');
+            alert('Error initializing Razorpay checkout');
         }
     }
 

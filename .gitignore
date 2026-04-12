@@ -29,3 +29,13 @@ ipl_json.zip
 
 catboost_info/
 prematch_model_tmp.json
+
+# Database
+instance/
+*.db
+
+# Trained model binaries (large files)
+*.cbm
+
+# Logs
+*.log
