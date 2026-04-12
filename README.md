@@ -33,7 +33,7 @@ Google Fonts & Icons (Lexend, Inter, Material Symbols)
 
 Backend (Proxy Server)
 
-Python 3
+Python 
 
 Flask (Micro web framework)
 
@@ -43,6 +43,5 @@ Flask-CORS (Cross-Origin Resource Sharing)
 
 python-dotenv (Environment variable security)
 
-Data Provider
-
-Cricbuzz API (via RapidAPI)
+Data Provider:
+Cricbuzz API 
