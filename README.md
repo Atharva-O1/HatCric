@@ -20,7 +20,7 @@ Smart API Caching & Polling: Built specifically to survive strict free-tier API 
 
 Zero-Build Frontend: No Webpack, no React, no Node.js required for the client. Just pure HTML, Tailwind CSS via CDN, and Vanilla ES6 JavaScript.
 
-🛠️ Tech Stack
+🛠️ Tech Stack:
 Frontend (Client)
 
 HTML5 & CSS3
@@ -31,7 +31,7 @@ Vanilla JavaScript (Fetch API, DOM Manipulation)
 
 Google Fonts & Icons (Lexend, Inter, Material Symbols)
 
-Backend (Proxy Server)
+Backend (Proxy Server):
 
 Python 
 
